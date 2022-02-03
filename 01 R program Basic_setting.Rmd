@@ -1,26 +1,3 @@
----
-title: "01 R program Basic_setting"
-author: "kwangtae27.kim@samsung.com"
-date: "`r Sys.Date()`"
-output:
-  word_document:
-    toc: yes
-    toc_depth: '3'
-  html_document:
-    code_folding: hide
-    toc: yes
-    toc_depth: 3
-    toc_float:
-      collapse: yes
-      smooth_scroll: no
-    theme: cosmo
-    highlight: tango
-  pdf_document:
-    latex_engine: xelatex
-    toc: yes
-    toc_depth: '3'
-mainfont: NanumGothic
----
 <style>
 div.gray pre {background-color:lightgray;}
 div.gray pre.r {background-color:gray;}
@@ -40,16 +17,27 @@ h1.title {
 }
 h1 { /* Header 1 */
   font-size: 28px;
+  font-weight: bold;
   color: DarkBlue;
 }
 h2 { /* Header 2 */
-    font-size: 22px;
+  font-size: 22px;
+  font-weight: bold;
+  font-family: NanumGothic;
   color: DarkBlue;
+  
 }
 h3 { /* Header 3 */
   font-size: 18px;
-  font-family: malgun;
+  font-weight: bold;
+  font-family: NanumGothic;
   color: DarkBlue;
+}
+h4 { /* Header 4 */
+  font-size: 16px;
+  font-weight: bold;
+  font-family: NanumGothic;
+  color: Black;
 }
 code.r{ /* Code block */
     font-size: 12px;
@@ -62,51 +50,52 @@ code.r{ /* Code block */
 xaringanExtra::use_clipboard()
 ```
 
+# 01. R Data 분석 환경 구축 및 기초
+
 ## **0. R & RStudio**
 - R은 통계 프로그래밍 플랫폼입니다. 처음에는 통계학자들이 주로 사용하였으나, 최근에는 사회과학 전분야에서 두루 활용되고 있습니다. R이 인기를 끄는 데는 두 가지 이유가 있습니다. 잘 알려진 SPSS나 SAS와 달리 GNU license로서 오픈소스에 무료입니다. 게다가 다양한 패키지를 연결하여 기능을 크게 확장할 수 있습니다.   
   
 - RStudio는 R을 쉽게 사용할 수 있게 해주는 통합 개발 환경(integrated  development environment,> 
-IDE)입니다. 이번 학습에서는 RStudio를 통해 R을 사용합니다. 
+IDE)입니다. Visual Studio나, Google Colab을 사용하시는 분도 있지만, 일반적으로 RStudio를 통해 R을 사용합니다. 
 
 
   
   
-## **1. R 과 RStudio 설치**
+## 1. R 과 RStudio 설치
 
 R을 이용하는 방법에는 로컬컴퓨터(자신의 컴퓨터)와 클라우드를 이용하는 방법 2가지가 있습니다. 
 
-  **1. 컴퓨터에 R을 설치해 이용  **
-    - 장점: 내 컴퓨터에서 사용하므로 편의성이 높다.  
-    - 단점: 컴퓨터 사양이 낮으면 매우 불편하다.  
-    
-  **2. 클라우드에서 R 이용  **
-    - 장점: 컴퓨터 사양이 낮아도 브라우저만 있으면 된다.  
-    - 단점: 매번 패키지를 설치해야 한다.  
+#### 1) 컴퓨터에 R을 설치해 이용
+  - 장점: 내 컴퓨터에서 사용하므로 편의성이 높다.  
+  - 단점: 컴퓨터 사양이 낮으면 매우 불편하다.  
+      
+#### 2) 클라우드에서 R 이용
+  - 장점: 컴퓨터 사양이 낮아도 브라우저만 있으면 된다.   
+  - 단점: 매번 패키지를 설치해야 한다.   
   
     ※ [RStudio클라우드](http://studiocloud.com/)와 [구글 코랩](http://colab.to/r) 등이 R을 클라우드에서 사용할 수 있는 IDE입니다.   
        구글 코랩의 기본값은 파이썬이지만, 위 주소로 연결하면 R이 사용언어로 설정됩니다.  
 
 ---  
 
-### **1-1. R과 Rtools 로컬컴퓨터에 설치하기**
+### 1-1. R과 Rtools 로컬컴퓨터에 설치하기
 
-**0. 설치 경로에 한글이 섞여있으면 향후 진행이 어렵습니다.**  
+#### 1) 설치 경로에 한글이 섞여있으면 향후 진행이 어렵습니다.  
   가능하면 C://이후 user명도 한글이 아닌 영어로 변경해야합니다.  
   또한 모든 설치 파일은 '관리자 모드로 실행' 해주셔야 합니다.  
   (참고 링크: [https://url.kr/b4zkl2](https://url.kr/b4zkl2))
 
-1. R project사이트에서 접속 링크 [(cloud.r-project.org)](https://cloud.r-project.org/)로 직접 접속하거나, 구글에서 “r project” 검색
+#### 2) R project사이트에서 접속 링크 [(cloud.r-project.org)](https://cloud.r-project.org/)로 직접 접속하거나, 구글에서 “r project” 검색
   
-2. 본인의 운영체제에 맞는 R다운로드 후 설치  
+#### 3) 본인의 운영체제에 맞는 R다운로드 후 설치  
 R을 설치하고 실행하면 콘솔 창이 열립니다. > 프롬프트가 뜨면 정상입니다. 
 
-3. Rtools는 [이곳](https://cran.r-project.org/bin/windows/Rtools/rtools40.html)을 클릭하신 뒤, **rtools40v2-x86_64.exe** 를 다운받아주세요. 
+#### 4) Rtools는 [이곳](https://cran.r-project.org/bin/windows/Rtools/rtools40.html)을 클릭하신 뒤, [rtools40v2-x86_64.exe] 를 다운받아주세요. 
 
-4. 이후 **rtools40v2-x86_64.exe** 파일을 실행시키시고,  
-계속 '다음'을 누르셔서 설치하시면 됩니다.
+#### 5) 이후 **rtools40v2-x86_64.exe** 파일을 실행시키시고, 계속 '다음'을 누르셔서 설치하시면 됩니다.
 
-5. 설치가 완료되신 이후에는 환경변수 설정을 해주셔야 합니다.  
-이 부분은 학습 시간에 다시 한 번 설명 드리겠습니다.  
+#### 6) 설치가 완료 된 이후에는 환경변수 설정을 해주셔야 합니다.  
+이 부분은 학습 시간에 함께 진행하겠습니다.   
   
     - RTOOLS40_HOME 환경변수 생성: 값 - `C:\rtools40`
     - 윈도우 검색창에 '시스템 환경 변수 편집' 검색  
@@ -119,19 +108,19 @@ R을 설치하고 실행하면 콘솔 창이 열립니다. > 프롬프트가 뜨
 ### **1-2. Rstudio 로컬컴퓨터에 설치하기**  
   
 
-1. 구글에서 ’rstudio’를 검색하거나 이 링크 [R Studio Desktop Free](https://rstudio.com/products/rstudio/download/#download)에서 다운로드 받아 설치합니다. 
+1) 구글에서 ’rstudio’를 검색하거나 이 링크 [R Studio Desktop Free](https://rstudio.com/products/rstudio/download/#download)에서 다운로드 받아 설치합니다. 
   
-2. 설치한 다음 아래처럼 실행되면 설치에 성공한 것입니다.  화면에 3개의 창틀이 열려 있는데, 각 창을 pane(창틀)이라고 합니다. 
+2) 설치한 다음 아래처럼 실행되면 설치에 성공한 것입니다.  화면에 3개의 창틀이 열려 있는데, 각 창을 pane(창틀)이라고 합니다. 
   
-3. 대부분의 IDE들은 비슷한 인터페이스를 가지고 있습니다. RStudio는 Matlab과 비슷한 인터페이스를 가지고 있으며, 처음 쓰시는 분들도 직관적으로 이해하실 수 있습니다.
+3) 대부분의 IDE들은 비슷한 인터페이스를 가지고 있습니다. RStudio는 Matlab과 비슷한 인터페이스를 가지고 있으며, 처음 쓰시는 분들도 직관적으로 이해하실 수 있습니다.
 
 ![](images/RInterface.png)
 
-  * Editor: 편집기. 워드프로세서에 글을 쓰듯이, 스크립트를 편집하고 저장하고 열어보는 데 사용합니다. ‘도킹해제undock’ 할 수 있습니다.
-  * Console: 명령어를 입력하고 출력을 확인합니다. 
+  * Editor: 편집기. 워드프로세서에 글을 쓰듯이, 스크립트를 편집하고 저장하고 열어보는 데 사용합니다. ‘도킹해제 undock’를 통해 큰 화면에서 별도로 작업할 수 있습니다. 
+  * Console: 명령어를 입력하고 출력을 확인합니다. 매우 유용하게 쓰입니다. 
   * Environment & History: 현재 사용 중인 변수들와 지금까지 사용한 명령어를 각각 보여줍니다.
   * Files: MS윈도우의 탐색기 또는 OSX의 Finder 역할을 합니다. 현재 위치를 보여줍니다. 
-      + Console에 `getwd()`을 입력해서 현재 위치를 볼 수도 있습니다. 
+          Console 창에 `getwd()`을 입력해서 현재 위치를 볼 수도 있습니다. 
   * Plots: 그래프를 볼 때 사용합니다.
   * Packages: 지금까지 설치한 패키지와 현재 사용중인 패키지를 보여줍니다. 새로운 패키지를 설치할 때도 사용합니다. 
       + *Update*를 실행해봅시다. 자주 업데이트 하는 것이 좋습니다.
@@ -140,11 +129,11 @@ R을 설치하고 실행하면 콘솔 창이 열립니다. > 프롬프트가 뜨
   * Viewer: 웹컨텐츠를 볼 때 사용합니다.  
    
 
-4. 여기까지 모든 설치가 잘 끝났는지 확인하기 위해 console 창에 아래와 같이 입력 후 확인합니다.   
+4) 여기까지 모든 설치가 잘 끝났는지 확인하기 위해 Rstudio console 창에 아래와 같이 입력 후 확인합니다.   
   
-```{r}
+```{r eval=FALSE}
 Sys.which('make')
-#
+
 #                             make 
 #"C:\\rtools40\\usr\\bin\\make.exe"
 ```
@@ -178,10 +167,10 @@ rscodeio::install_theme()
 
 ---  
 
-## **2. R 언어 입문하기 **
+## 2. R 언어 입문하기
   
   
-### **2-1. Hello world**  
+### 2-1. Hello world
   
  - 프로그래밍을 배울 때, 가장 처음 해보는 **Hello World**로 R 언어 기초 과정을 시작하겠습니다. 
 
@@ -857,15 +846,15 @@ d
 ```
 
   
-### **3-2. 마술 상자 같은 '함수' 이해하기**
+### 3-2. 마술 상자 같은 '함수' 이해하기
 
-**함수**
+#### 함수
 
 - 값을 넣으면 특정한 기능을 수행해 처음과 다른 값이 출력됨
 
 ![](img/03_03.png)
 
-#### **숫자를 다루는 함수 이용하기**
+#### 숫자를 다루는 함수 이용하기
 
 ```{r}
 # 변수 만들기
@@ -879,7 +868,7 @@ min(x)
 ```
 
 
-#### **문자를 다루는 함수 이용하기**
+#### 문자를 다루는 함수 이용하기  
 
 ```{r}
 str5 <- c("Hello!", "World", "is", "good!")
@@ -891,12 +880,12 @@ paste(str5, collapse = ",")  # 쉼표를 구분자로 str4의 단어들 하나�
 
 
 
-#### **함수의 옵션 설정하기 - 파라미터**
+#### 함수의 옵션 설정하기 - 파라미터  
 ```{r}
 paste(str5, collapse = " ")
 ```
 
-#### **함수의 결과물로 새 변수 만들기**
+#### 함수의 결과물로 새 변수 만들기  
 ```{r}
 x_mean <- mean(x)
 x_mean
@@ -907,7 +896,7 @@ str5_paste
 
 
 
-### **3-3. 함수 꾸러미, '패키지' 이해하기**
+### **3-6. 함수 꾸러미, '패키지' 이해하기
 
 
 **패키지(packages)**
@@ -924,61 +913,19 @@ str5_paste
 ### **ggplot2 패키지 설치하기, 로드하기**
 
 ```{r, eval=F}
-install.packages("ggplot2")  # ggplot2 패키지 설치
-library(ggplot2)             # ggplot2 패키지 로드
+install.packages("esquisse")  # esquisse 패키지 설치
+library(esquisse)             # esquisse 패키지 로드
+
+
+
 ```
 
 ---  
 
-  
-## **연습 1: Console과 Editor**
-* Console에 아래 내용을 한 줄씩 입력하고 엔터키를 치세요. Console과 Environment에서 결과를 확인해보세요. 
-```{r, eval=FALSE}
-a <- 1
-a
-b = 2
-a + b
-```
-* 이번에는 Environment 창에 있는 작은 빗자루를 클릭하세요. Console에 `a`를 입력하면 어떻게 될까요?
-* 이제 위의 코드를 Editor에 입력합시다. 네 줄을 한꺼번에 실행하려면 어떻게 하면 될까요? 한 줄씩 실행하려면 어떻게 하면 될까요?
 
 
-## **연습 2: Generating normally distributed numbers**
-* 정규분포에서 무작위로 숫자를 추출해봅시다. 그보다 먼저, Google에서 "R random normal distribution"를 키워드로 검색하세요.
-    + 검색결과 중에서 '[Probabilities and Distributions | R Learning Modules](https://stats.oarc.ucla.edu/r/modules/probabilities-and-distributions/)' 페이지에 방문해보세요. 
-    + 사례로 나오는 코드를 참고하여 새 코드를 작성해봅시다. 아래 각 줄을 콘솔에 직접 입력해도 좋고, 에디터에 입력후 하나씩 실행해도 좋습니다.
-```{r eval=FALSE}
-a <- rnorm(n=100, mean=0, sd=1)
-?rnorm
-plot(a)
-hist(a)
-```
-* 같은 요령으로 **uniform distribution**의 무선표본을 추출해볼 수 있습니다.  
-  0과 1 사이에서 1000개의 값을 추출하여 히스토그램으로 그려보세요.
 
 
-## **연습 3: Simpson's paradox**
-
-* SPSS, SAS와 같은 상용 툴보다 Google(Stackoverflow, Github 등)에서  
-  활발하게 질의응답이 이루어지고 있습니다. 모르는 내용이 나오거나 에러가 나면 Google 검색을 해보세요. 
-    
-* R에 내장된 UC Berkeley 합격자 자료를 살펴보겠습니다. 
-
-```{r eval=FALSE}
-UCBAdmissions  # 몇 차원의 자료인가요?
-?UCBAdmissions # 도움말과 함께 다시 한번 자료를 봅시다.
-apply(UCBAdmissions, c(1,2), sum)
-```
-
-* 마지막 명령어는 `apply`를 사용하여 세 번째 차원을 무시하고 첫 번째와 두 번째 차원을 기준으로 자료를 합쳤습니다. 결과를 살펴봅시다. 어떤 판단을 내릴 수 있을까요?
-* 이제 자료를 시각화하는 방법을 생각해봅시다. **vcd**라는 패키지를 설치하고, 이를 이용하여 **모자이크 플롯**을 그려보겠습니다. 
-
-```{r eval=FALSE}
-library(vcd) # 아까 설치했던 vcd를 사용할 준비를 합니다.
-mosaic(~Dept + Admit + Gender, UCBAdmissions)
-colnames(UCBAdmissions) = c("M", "F")
-mosaic(~Dept + Admit + Gender, UCBAdmissions)
-```
 
 
-  
+
