@@ -1,0 +1,515 @@
+<style>
+div.gray pre {background-color:lightgray;}
+div.gray pre.r {background-color:gray;}
+</style>
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 16px;
+  }
+td {  /* Table  */
+  font-size: 16px;
+}
+h1.title {
+  font-size: 38px;
+  color: Black;
+}
+h1 { /* Header 1 */
+  font-size: 28px;
+  font-weight: bold;
+  color: DarkBlue;
+}
+h2 { /* Header 2 */
+  font-size: 22px;
+  font-weight: bold;
+  font-family: NanumGothic;
+  color: DarkBlue;
+  
+}
+h3 { /* Header 3 */
+  font-size: 18px;
+  font-weight: bold;
+  font-family: NanumGothic;
+  color: DarkBlue;
+}
+h4 { /* Header 4 */
+  font-size: 16px;
+  font-weight: bold;
+  font-family: NanumGothic;
+  color: Black;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+    font-size: 14px;
+}
+</style>
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringanExtra::use_clipboard()
+```
+
+
+# 04. Data 입출력 및 EDA
+## 1. 학습 안내
+    
+  - 이번 시간에 진행하는 내용에 도움이 되실 유튜브 강의를 아래와 같이 추천드립니다.    
+    - [ R 기초 - 분할 적용 결합 - dplyr 🔑 데이터 변환 | 전처리 | 그룹화 | 파이프 연산자](https://youtu.be/sWyf1_Sk1lk)  
+    - [이거 외계어 아니야? R 연산자 (operator) 부시기! 고급편!](https://www.youtube.com/watch?v=n2srjwtG1eo)  
+    - [R프로그래밍 tidyverse로 코딩하는데 모르면 땅을 치고 후회하는 연산자](https://www.youtube.com/watch?v=7RyIP_hpHbY)  
+
+---
+
+## **2. 파일 불러오기**
+  
+  - R이나 파이썬을 처음 시작하실 때, 가장 많은 분들이 어려움을 겪으시는 것이  
+    바로 데이터를 프로그램에서 불러오는 것입니다.  
+      
+  - Rstudio에 GUI 기반으로 편하고 쉽게 불러올 수 있는 기능도 있습니다. 다만,  
+    보안이 걸려있거나, 형식에 맞지 않는 문자가 삽입되어 있는 데이터는 에러가 납니다.  
+      
+  - 그래서 저는 엑셀에 있는 데이터를 복사해서 불러오는 것을 가장 자주 사용합니다.  
+  
+
+### **2.1 데이터 복사 붙여넣기** 
+
+#### **2.1.1. 큰 사이즈 데이터 복사 붙여넣기** 
+
+  - 엑셀에서 가져오기 원하는 데이터를 선택하시고, Ctrl+c를 눌러주세요.  
+  - 그리고 아래 코드를 실행해주세요. 
+
+```{r eval=FALSE}
+
+# 클립보드에 있는 데이터 붙여넣기 
+mydata <-  read.table("clipboard-16384", sep="\t", fill=T, header = T) 
+```
+
+##### read.table() 옵션
+  
+  * R로 불러오고자 하는 데이터의 크기를 보시고, clipboard 뒤쪽 숫자를 넣어주시면 됩니다.  
+  clipboard-16384 는 16384kb 크기까지 클립보드의 데이터를 붙여 넣기 하라는 뜻이며  
+  이는 약 16mb 크기까지 붙여 넣기 하라는 것입니다.  
+  
+  * 만약 붙여넣기 하고자 하시는 엑셀 데이터가 300mb 크기라면   
+  300000kb clipboard-300000 을 넣으시면 됩니다.  
+    
+  * 그 외 아래 옵션을 디폴트로 사용합니다. 
+  
+    ```
+    * sep = "\\t"는 Tab으로 열을 구분하라는 뜻입니다.  
+    만약 옵션에 "\\," 이렇게 넣으시면 , 로 구분되며,  
+    데이터가 어떻게 구성되어 있는지에 따라 다르게 넣으시면 됩니다.  
+    일반적인 엑셀 데이터라면 "\\t" 하시면 됩니다. 
+    
+    * fill = T 는 비어 있는 셀에는 아무것도 없다는 뜻의 NA를 넣는다는 뜻입니다.    
+    
+    * header=T 는 엑셀데이터의 첫 행을 열 이름으로 사용한다는 뜻입니다.    
+    ```
+
+  - R에서 생성한 변수를 클립보드로 보내서, 다시 엑셀에 붙여 넣을 수도 있습니다.   
+    
+
+```{r eval=FALSE}
+# R에 있는 변수를 클립보드로 내보내기 
+write.table(mydata, file = "clipboard-1694949", sep = "\t", row.names = FALSE)
+
+```
+
+  - 이제 다시 엑셀에 가셔서 ctrl+v로 데이터를 붙여넣어보세요. 
+  
+  
+#### **2.1.2. 작은 사이즈 데이터 붙여넣기** 
+
+  - 아래 코드를 실행해서 **datapasta** 패키지를 설치합니다. 
+
+```{r}
+
+# data pasta 패키지 활용하기 
+# install.packages('datapasta')
+library(datapasta)
+
+```
+
+  - 이제 엑셀에서 가져오기 원하는 데이터를 선택하시고, Ctrl+C 를 눌러주세요.  
+  - 이후에는 아래 그림처럼 **Addins** 를 클릭하시고,**paste as tibble**을 클릭해주세요.   
+  
+  ![](images/copy.png)
+
+  - 그럼 아래와 같은 형태로 곧바로 사용할 수 있도록 데이터가 만들어집니다. 
+
+
+```{r eval=FALSE}
+
+tibble::tribble(
+  ~mpg, ~cyl, ~disp,  ~hp, ~drat,   ~wt, ~qsec, ~vs, ~am, ~gear, ~carb,
+    21,   6L,   160, 110L,   3.9,  2.62, 16.46,  0L,  1L,    4L,    4L,
+    21,   6L,   160, 110L,   3.9, 2.875, 17.02,  0L,  1L,    4L,    4L,
+  22.8,   4L,   108,  93L,  3.85,  2.32, 18.61,  1L,  1L,    4L,    1L,
+  21.4,   6L,   258, 110L,  3.08, 3.215, 19.44,  1L,  0L,    3L,    1L,
+  18.7,   8L,   360, 175L,  3.15,  3.44, 17.02,  0L,  0L,    3L,    2L,
+  18.1,   6L,   225, 105L,  2.76,  3.46, 20.22,  1L,  0L,    3L,    1L,
+  14.3,   8L,   360, 245L,  3.21,  3.57, 15.84,  0L,  0L,    3L,    4L,
+  24.4,   4L, 146.7,  62L,  3.69,  3.19,    20,  1L,  0L,    4L,    2L,
+  22.8,   4L, 140.8,  95L,  3.92,  3.15,  22.9,  1L,  0L,    4L,    2L,
+  19.2,   6L, 167.6, 123L,  3.92,  3.44,  18.3,  1L,  0L,    4L,    4L,
+  17.8,   6L, 167.6, 123L,  3.92,  3.44,  18.9,  1L,  0L,    4L,    4L,
+  16.4,   8L, 275.8, 180L,  3.07,  4.07,  17.4,  0L,  0L,    3L,    3L,
+  17.3,   8L, 275.8, 180L,  3.07,  3.73,  17.6,  0L,  0L,    3L,    3L,
+  15.2,   8L, 275.8, 180L,  3.07,  3.78,    18,  0L,  0L,    3L,    3L,
+  10.4,   8L,   472, 205L,  2.93,  5.25, 17.98,  0L,  0L,    3L,    4L,
+  10.4,   8L,   460, 215L,     3, 5.424, 17.82,  0L,  0L,    3L,    4L,
+  14.7,   8L,   440, 230L,  3.23, 5.345, 17.42,  0L,  0L,    3L,    4L,
+  32.4,   4L,  78.7,  66L,  4.08,   2.2, 19.47,  1L,  1L,    4L,    1L,
+  30.4,   4L,  75.7,  52L,  4.93, 1.615, 18.52,  1L,  1L,    4L,    2L,
+  33.9,   4L,  71.1,  65L,  4.22, 1.835,  19.9,  1L,  1L,    4L,    1L,
+  21.5,   4L, 120.1,  97L,   3.7, 2.465, 20.01,  1L,  0L,    3L,    1L,
+  15.5,   8L,   318, 150L,  2.76,  3.52, 16.87,  0L,  0L,    3L,    2L,
+  15.2,   8L,   304, 150L,  3.15, 3.435,  17.3,  0L,  0L,    3L,    2L,
+  13.3,   8L,   350, 245L,  3.73,  3.84, 15.41,  0L,  0L,    3L,    4L,
+  19.2,   8L,   400, 175L,  3.08, 3.845, 17.05,  0L,  0L,    3L,    2L,
+  27.3,   4L,    79,  66L,  4.08, 1.935,  18.9,  1L,  1L,    4L,    1L,
+    26,   4L, 120.3,  91L,  4.43,  2.14,  16.7,  0L,  1L,    5L,    2L,
+  30.4,   4L,  95.1, 113L,  3.77, 1.513,  16.9,  1L,  1L,    5L,    2L,
+  15.8,   8L,   351, 264L,  4.22,  3.17,  14.5,  0L,  1L,    5L,    4L,
+  19.7,   6L,   145, 175L,  3.62,  2.77,  15.5,  0L,  1L,    5L,    6L,
+    15,   8L,   301, 335L,  3.54,  3.57,  14.6,  0L,  1L,    5L,    8L,
+  21.4,   4L,   121, 109L,  4.11,  2.78,  18.6,  1L,  1L,    4L,    2L
+  )
+
+```
+
+  
+   
+### **3. Rstudio에서 불러오기** 
+  
+#### **3.1. 파일 포맷에 맞춰 File>import Dataset> 선택해줍니다** 
+
+  ![](images/fileinput.png)
+
+#### **3.2. 아래와 같이 Import하는 R 코드와 GUI가 보입니다**
+
+  ![](images/fileinput2.png)
+  - 수업시간에 함께 해보겠습니다.   
+  
+---
+  
+## **4. 데이터 확인하기**
+
+### **4.1. 사용할 데이터 다운받기**   
+  
+  - 아래 링크를 클릭하시어 Kaggle 데이터를 다운 받으셔서 엑셀로 파일을 여신 후 셀 전체를 선택하시고 복사(ctrl+c) 해주세요.  
+  - 아래 경로에서 데이터가 다운되지 않는 분께서는, 제가 함꼐 공유드리는 csv 파일 활용하시면 됩니다.   
+
+  [IBM HR Data Download link](https://www.notion.so/yeahbeeat/IBM-HR-Data-from-Caggle-b5b4753db0a64f5aae4d3d207e14ecf9)
+    
+  [Kaggle](https://www.kaggle.com/)은 빅데이터 솔루션 대회 플랫폼으로 전 세계 분석가들이 모여 각종 데이터를 분석하고, 
+    경쟁하는 플랫폼입니다. 연습할 수 있는 다양한 분야의 데이터가 올라오기 때문에, 적극 활용을 추천 드립니다.    
+  
+    
+  
+
+### **4.2. 복사한 데이터 변수 저장**
+
+> read.table('clipboard') : clipboard에 있는 데이터를 테이블로 읽어오겠다. 
+  
+  * 아래의 코드를 실행하시면 data 변수에 데이터가 복사됩니다.  
+  
+```{r eval=FALSE}
+#kaggle에 올라와 있는 IBM HR data를 복사한 뒤 코드를 실행했습니다 
+data <- read.table(pipe("pbpaste"), sep="\t", fill=T, header = T) 
+
+```
+  
+```{r eval=FALSE}
+#kaggle에 올라와 있는 IBM HR data를 복사한 뒤 코드를 실행했습니다 
+data <- read.table("clipboard-16384", sep="\t", fill=T, header = T) 
+
+```
+
+  
+
+  - 오늘 사용할 패키지들을 한번에 설치하고, 로딩해봅니다. 
+  
+```{r results='hide'}
+
+# install.packages('pacman')
+pacman::p_load(tidyverse, dlookr, ExPandaR)
+
+```
+  
+  - 이제 아래 코드를 실행하여, IBM data가 잘 변수화 되었는지 확인해봅니다.  
+  
+  
+```{r head 함수 활용, eval=FALSE}
+#IBM HR Data는 향후 t-test 관련 Tip에서 공유 드릴 예정입니다. 
+# head() 함수를 통해 복사 붙여넣기가 잘 되었는지 확인합니다. 
+head(data)
+
+#tidy하게 표현
+data %>% head()
+```
+
+  * 이외에도 다양한 옵션이 있으며,아래 링크로 가시면  
+  옵션에 대한 설명을 들으실 수 있습니다.  
+    
+  [read.table 함수 option 확인하기](https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table)
+  
+  
+---
+  
+## **5. Data 파악하기**
+
+```{r setup2, include=FALSE}
+knitr::opts_chunk$set(fig.align = "center", message=F, warning=F, fig.height = 5, cache=T, dpi = 300)
+```
+
+  * 저는 데이터 분석을 진행할 때, 보통 아래와 같은 순서로 진행합니다.   
+  
+  
+  
+단계| 데이터 분석 절차    
+:---:|:---
+(1) | 데이터 복사하여 입력
+(2) | 데이터 구조 파악
+(3) | 데이터 전 처리 진행
+(4) | 데이터 분석 시행
+  
+   
+  * 분석하려는 데이터가 어떤 형태로, 어떤 변수로 구성되어 있는지  
+    파악 하시는 것이 향후 전처리, 분석을 진행 할 때 도움이 됩니다. 
+    
+    
+  * 이번 학습 시간에는 R에 내장되어 있는 **iris data**를 활용하겠습니다.   
+  
+  
+### **5.1 데이터 형식/변수 확인**
+
+> **glimpse(데이터) : 데이터 를 힐끗 살펴보겠다**       
+
+   
+  * 데이터가 몇 개의 관측치(row)와, 몇 개의 변수(column)로 구성되어 있는지 빠르게 보여줍니다.   
+  
+  
+  * 저는 주로 데이터를 복사 붙여 넣기 한 뒤,   
+    제대로 붙여 넣기가 되었는지 확인하는 용도로 사용합니다.   
+  
+  
+  
+  * R에 기본 내장되어 있는 **iris** 데이터는 5개 열과 150줄로 구성되어 있습니다.  
+    따라서, observation은 150, variables는 5 로 표시되어야 합니다.  
+  
+```{r tidyverse 활용, eval=FALSE}
+# 앞으로 자주 사용하게 될 tidyverse library를 로드해줍니다. 
+# 아직 설치가 되어 있지 않으시다면, install.package('tidyverse')로 설치해주세요. 
+library(tidyverse)
+```
+  
+```{r eval=FALSE}
+# R에 내장되어 있는 iris Data를 glimpse 함수를 활용하여 힐끗 봅니다. 
+glimpse(iris)
+```
+  
+  * glimpse로는 데이터가 어떤 값으로 구성되어 있는지,  
+  어떤 자료형으로 들어가 있는지, 관측값과 변수는 몇 개인지 빠르게 확인할 수 있습니다. 
+    
+    ```
+    ## Observations: 150
+    ## Variables: 5
+    ## $ Sepal.Length <dbl> 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4,...
+    ```
+   
+  * 위와 같은 형태로 데이터가 나올 때 **<dbl>** 이라고 된 부분이    
+    자료형을 나타내 주는 부분입니다.    
+   
+  * 자료형(Data type) 은 아래와 같은 종류가 자주 사용됩니다.   
+       
+    ```
+      +	NULL: 데이터가 없는 경우  
+      +	Logical: 불리언, 참 또는 거짓  
+      +	Int: 정수  
+      +	Double: 부동소수점 실수  
+      +	Complex: 복소수  
+      +	Character: 문자열  
+      +	List: 리스트  
+      +	Closure: 함수  
+    ``` 
+    
+  ※ 자료형에 대해서는 아래 링크 다시 한 번 확인 부탁 드립니다.  
+  
+  [R의 기본 자료형](https://datascienceschool.net/view-notebook/0a66597ee82f464b9e2015e41cff8205/)
+  
+  
+* 데이터를 파악할 때, 데이터 구조(Data Structure)도 중요합니다.  
+자주 사용되는 데이터 구조는 아래와 같습니다.   
+      
+    ```
+      + data.frame : 데이터 프레임
+      + tibble : 데이터 프레임을 재구성한, 심플한 데이터 프레임
+      + list : 리스트
+      + matrix : 매트릭스
+      + vector : 벡터
+      + factor : 요인
+    ```
+  
+  
+* 데이터 구조를 확인하고 싶을 때는 str() 함수를 사용하시면 됩니다. 
+```{r eval=FALSE}
+str(iris)
+#iris Data는 data frame 구조를 갖는다는 것을 알 수 있습니다. 
+```
+
+
+※ 데이터 구조에 대해서는 아래 링크 추가 확인 부탁 드립니다. 
+
+[R의 데이터 구조](https://m.blog.naver.com/PostView.nhn?blogId=definitice&logNo=220967729928&proxyReferer=https:%2F%2Fwww.google.com%2F)
+
+
+### **5.2. 변수 클래스 확인**
+  
+> **class(데이터) : 데이터에 들어있는 변수의 자료형(클래스)를 알려달라**  
+  
+* 자료형과 클래스는 다르기에 클래스도 확인을 해주는 것이 좋습니다.  
+저는 각 열 단위로 클래스를 확인하기 위해 apply함수와  
+class 함수를 아래와 같이 활용합니다. 
+
+```{r eval=FALSE}
+
+apply(iris,2,class)
+
+#tidy하게 표현
+iris %>% apply(2,class)
+
+```
+
+### **5.3. 변수 고유 값 확인**
+  
+> **unique(데이터) : 데이터 고유 값들을 보여달라**
+
+* glimpse 함수를 통해 데이터 복사 후 입력이 잘 되었는지 확인이 되었으면,  
+주요 변수가 각 행에 잘 입력되었는지 unique 함수를 통해 확인 합니다.   
+  
+* 아래와 같이 iris 데이터의 Species 항목에 대해 unique 함수를   시행하면 고유 값이 출력됩니다. 
+
+* 저는 제가 다루는 데이터의 직급/직위, 회사 등이 제대로 해당 열에 들어 있는지 파악하는데 unique함수를 주로 사용하고 있습니다. 
+
+
+```{r unique}
+
+unique(iris$Species)
+#iris 데이터의 Species 열은 어떤 값들로 구성되어 있는지 확인할 수 있습니다. 
+
+#tidy하게 표현
+iris$Species %>% unique
+
+```
+
+### **5.4. 결측치(NA) 확인**
+  
+> **is.na(데이터) : 데이터에 NA 값이 있나요? True/False로 알려줘요**
+
+* 데이터에 결측치(NA) 가 있는지 확인하는 is.na() 
+데이터에 결측치가 들어있는지 TRUE/FALSE를 통해 확인합니다. 
+
+```{r eval=FALSE}
+
+is.na(iris)
+
+#tidy하게 표현
+iris %>% is.na
+
+```
+
+* 위와 같이 TRUE/FALSE로 값을 반환한 것은 한 눈에 보기 쉽지 않기에,  
+보통 sum() 함수를 같이 사용하여 몇 개의 결측치가 있는지 파악합니다. 
+
+```{r eval=FALSE}
+
+sum(is.na(iris))
+
+#tidy하게 표현
+iris %>% is.na %>% sum
+
+```
+
+* NA 값이 있는 경우, 어떻게 처리를 하는지는 다음 R Tips에서 공유 드리겠습니다.  
+  
+    
+    
+
+### **5.5. 요약 통계량 확인**  
+  
+> **summary(데이터) : 데이터를 요약해서 보여주세요**
+  
+  * 데이터의 최소, 최대, 중앙값, 평균값, 1분위값, 3분위값을 보여주며,  
+    향후 각종 분석 결과를 보여주는 중요한 함수입니다.  
+  
+  * 저는 데이터 전처리를 할 때 summary함수를 사용하여 분위수를 확인하고,  
+    1분위수 이하, 3분위수 이상의 값들을 제거하고 분석하곤 합니다.  
+  
+  * 이 외에도, summary 함수는 정말 유용하게 많이 활용됩니다.
+
+``` {r eval=FALSE}
+
+summary(iris)
+
+```
+
+### **5.7. 기타 함수**  
+  
+> **데이터를 확일할 때 사용하는 기타 함수들도 기억해주세요 **
+  
+  * 데이터를 확인할 때 아래의 함수들도 자주 사용합니다. 
+
+``` {r eval=FALSE}
+
+head(iris)      # 1~6행까지 출력
+head(iris, 10)  # 1~10행까지 출력
+
+tail(iris)      # 1~6행까지 출력
+tail(iris, 10)  # 1~10행까지 출력
+
+View(iris)      # 데이터 뷰어 창에서 exam 데이터 확인
+dim(iris)       # 행, 열 출력
+str(iris)       # 데이터 속성 확인
+
+
+```
+
+
+## **6.EDA(탐험적 데이터분석) 패키지 소개** 
+
+> **ExPanDaR, dlookr 등 다양한 EDA 패키지들이 있습니다**
+
+
+  * 데이터 구조가 어느정도 익숙해지고,  
+    결측치나 데이터 전처리가 필요 없다면, 곧바로 EDA를 하셔도 좋습니다.   
+  
+  * dlookr, ExPanDaR과 같은 좋은 패키지들이 나와 있어서  
+    설치하시고 한 줄만 입력하시면 데이터 안에 있는 변수들간  
+    상관/회귀/빈도 등 다양한 정보를 알 수 있습니다. 
+
+  * 분석할 데이터의 class는 보고자 하는 결과 형식에 따라 바꿔주시면 됩니다. 
+
+```{r eval=FALSE}
+
+
+#iris는 shiny app 기반으로 동작하므로, 새로운 창에서 동작합니다. 
+# 아래 코드를 # 없이 구동해보세요! 
+# library(ExPanDaR)
+# ExPanDaR::ExPanD(iris)
+
+#dlookr는 한국분이 만드신 EDA 패키지로, 다양한 기능들이 있으며, 데이터의 전반을 파악하는데 매우 유용하게 사용됩니다. 
+
+library(dlookr)
+#dlookr::diagnose(iris)
+#dlookr::eda_report(iris)
+
+```
+
+
+  [ExpandaR 활용 예제 보기](https://joachim-gassen.github.io/ExPanDaR/dev/index.html)
+  
+  [dlookr 패키지 활용하여 데이터 진단하기](https://velog.io/@suzin/R-%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%83%90%EC%83%89-6.-dlookr-%ED%8C%A8%ED%82%A4%EC%A7%80%EB%A5%BC-%ED%86%B5%ED%95%9C-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%A7%84%EB%8B%A8EDA)
+
+
