@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>R programming_lecture 5</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="kwangtae kim" />
+    <script src="libs/header-attrs-2.11/header-attrs.js"></script>
+    <script src="libs/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# R programming_lecture 5
+## ⚔<br/>with xaringan
+### kwangtae kim
+### Yonsei IOPsy
+### 2022/02/01 (updated: 2022-02-13)
+
+---
+
+
+
+
+
+
+
+
+
+# 05. R 언어 기초(2) 
+
+## 0. 학습 안내  
+  
+* 데이터 전처리를 **(1) 결측치 처리**와 **(2) 이상값 처리** 로 나누어 설명드리겠습니다.  
+
+* 이번 학습에는 R에 기본 내장되어 있는 **naniar 패키지의 riskfactors 데이터**를 활용하겠습니다.   
+    
+* 먼저, 학습에 앞서 필요한 라이브러리를 호출합니다.  
+  
+
+
+
+```r
+#데이터 구조를 시각적으로 확인할 수 있는 visdat 패키지도 호출합니다. 
+pacman::p_load('tidyverse', 'naniar', 'visdat')
+```
+
+  
+* 이제 오늘 활용할 riskfactors 데이터를 파악해 보겠습니다.  
+  
+* str함수를 통해 riskfactors 데이터가 어떤 자료형과 어떤 구조로 되어 있는지 확인하실 수 있습니다.  
+
+  
+   
+
+```r
+str(riskfactors) 
+```
+    
+* riskfactors 데이터는 34개의 변수(열)와 245개의 관측치(행)로 구성되어 있으며,  
+tibble 데이터 구조를 갖고 있음을 알 수 있습니다. 
+      
+      
+---
+
+## 1. 결측치 처리하기   
+   
+   
+### 1.1 결측치 제거
+      
+&gt; **na.omit(데이터) : 데이터의 결측치를 제거하라**
+  
+  
+  
+* 데이터에 값이 들어 있지 않은 경우, NA로 표시가 됩니다.     
+  
+   
+* 저는 처음 데이터 분석을 진행할 때는 NA를 처리하지 않고 진행하시는 것을 추천 드립니다.  
+  
+     
+* NA가 한 개만 들어있어도 해당 줄을 다 날리기 때문에  
+아까운 다른 데이터까지 다 날려버릴 수도 있습니다.  
+  
+  
+* 아래의 예제를 보시면, na.omit으로 결측치를 날렸을 때  
+riskfactors의 관측치가 0으로, 모든 값 (행)이 없어진 것을 확인하실 수 있습니다.  
+  
+
+
+```r
+glimpse(na.omit(riskfactors))
+```
+  
+  
+* na.omit 함수 안에 데이터를 넣으시면 해당 데이터의 NA값이 포함된 관측치(행)을 제거합니다.  
+
+---
+
+### 1.2 각 함수의 결측치 제거 옵션 활용 
+
+* 저는 결측지는 우선 그대로 두고, 분석을 진행해 보시는 것을 추천드립니다.    
+  
+* 회귀, 상관 등 대부분의 분석 함수들이 na값을 제외하고 분석을 진행하는 옵션을 갖추고 있습니다.    
+  
+* NA를 처리 하지 않은 상태에서 함수의 NA처리 옵션을 활용하여 돌려 보시고, 이후 NA를 처리하시고 돌려보시는 것을 추천 드립니다.    
+
+* 대부분의 함수에 na값을 제외하고 돌릴 수 있는 인자가 있습니다.   
+    
+* sum 함수의 경우, na.rm 옵션으로 na값을 제외하고 구할 수 있습니다.  
+
+* 아래의 예를 보시면, na.rm 옵션이 없을 때는 결과가 NA가 나오지만, na.rm 옵션이 있을 때는 NA 값을 제외한 값들의 sum 결과가 표시됨을 보실 수 있습니다.        
+  
+  
+  
+
+```r
+# NA값이 포함되어 있는 데이터의 sum을 구하면, 결과값이 NA로 나옵니다. 
+sum(riskfactors$diet_fruit)
+
+# sum 함수에서 NA값을 제거하고 sum하는 옵션인 na.rm=T 를 넣으면 값이 나옵니다. 
+sum(riskfactors$diet_fruit,na.rm=T)
+```
+  
+---
+  
+* 회귀분석의 경우에는 na.action 옵션이 있습니다.  
+* na.action 옵션에 따라 잔차에 차이가 발생합니다.   
+
+```
+lm(bmi~pregnant,riskfactors,na.action = na.omit) 
+```
+* na.action 조건을 na.omit으로 주었을 경우, NA값을 제외 시키며,  
+이에 따라 결측치가 제거된 후 위와 같이 회귀분석이 실행됩니다.  
+
+---
+  
+### 1.3 결측치 요약 및 시각화
+  
+* naniar 패키지를 활용하시면 결측치를 쉽고 빠르게 파악하실 수 있습니다.  
+* 우선 **miss_case_summary** 함수를 활용하시면 행 기준으로 결측치가 몇 개 있는지  
+결측치가 그 행의 전체 데이터 중 몇 퍼센트를 차지하는지 알려줍니다.  
+
+* **miss_var_summary** 함수는 열 기준으로 알려줍니다.  
+  
+  
+
+```r
+# 관찰값(행) 기준의 결측치 탐색
+miss_case_summary(riskfactors) 
+```
+
+```
+## # A tibble: 245 x 3
+##     case n_miss pct_miss
+##    &lt;int&gt;  &lt;int&gt;    &lt;dbl&gt;
+##  1    91     15     44.1
+##  2   133     15     44.1
+##  3     4     12     35.3
+##  4    49     12     35.3
+##  5   185     12     35.3
+##  6    10     11     32.4
+##  7   231     10     29.4
+##  8    14      9     26.5
+##  9    61      8     23.5
+## 10    80      8     23.5
+## # ... with 235 more rows
+```
+
+```r
+# 변수(열) 기준의 결측치 탐색
+miss_var_summary(riskfactors) 
+```
+
+```
+## # A tibble: 34 x 3
+##    variable      n_miss pct_miss
+##    &lt;chr&gt;          &lt;int&gt;    &lt;dbl&gt;
+##  1 pregnant         215    87.8 
+##  2 smoke_stop       212    86.5 
+##  3 smoke_last       161    65.7 
+##  4 drink_average    135    55.1 
+##  5 drink_days       134    54.7 
+##  6 smoke_days       128    52.2 
+##  7 health_poor      113    46.1 
+##  8 bmi               11     4.49
+##  9 weight_lbs        10     4.08
+## 10 diet_fruit         8     3.27
+## # ... with 24 more rows
+```
+  
+---
+
+* **vis_miss** 함수를 활용하여 간단하게 시각화하여 확인할 수도 있습니다.  
+  
+
+
+```r
+vis_miss(riskfactors)
+```
+
+&lt;img src="05-R-program-data_preprocessing_files/figure-html/vis_miss 함수-1.png" style="display: block; margin: auto;" /&gt;
+  
+  
+---
+
+* **gg_miss_upset** 함수를 활용하시면, 어떤 패턴으로 결측치가 존재하는지 확인하실 수 있습니다.  
+    
+* 아래의 예를 보시면, 5개 데이터가 모두 없는 경우가 72건으로 가장 많았고,  
+그 다음은 smoke_last, smoke_stop, pregnant 값이 없는 경우가 42건으로 많았습니다  
+  
+
+```r
+gg_miss_upset(riskfactors)
+```
+
+&lt;img src="05-R-program-data_preprocessing_files/figure-html/gg_miss_upset-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+  
+    
+### 1.4. 결측치 대체하기  
+  
+* 저희가 보유하고 있는 데이터는 그 수가 많기에, 결측치를 대체하지 않고,  
+제거한 후 사용하여도 원하는 분석결과를 얻으실 수도 있습니다.
+  
+* 결측치를 대체하여 분석하기 원하신다면 아래의 포스팅 참고 부탁 드립니다.  
+  
+* mice, rpart, DMwR 등의 패키지를 활용하여 결측치를 대체하실 수 있습니다.    
+  
+  
+* 자세한 내용은 아래 링크 참조 부탁 드립니다.   
+  
+  [결측치 처리 기본개념](https://m.blog.naver.com/tjdudwo93/221142961499)  
+  [결측치 처리(the book)](https://thebook.io/006723/ch09/02/02/)
+  
+---
+  
+## 2. 이상치 처리 
+
+
+
+* 회귀, 상관 등 각종 분석을 진행 하다 보면, 이상치 유무에 따라 결과가 달라지는 것을 경험하게 됩니다. 
+  
+  
+* 제가 주로 분석하는 조직문화 데이터에는 불성실 응답 등 이상치가 꽤 포함되어 있습니다.  
+  
+  
+* 저는 문항 간 상관/회귀 등의 전반적인 트렌드를 볼 때 이상치를 제외하고 분석하고 있으며,  
+이러한 이상치들만 모아 놓고 이상치 탐색을 통해 이상치의 특성을 밝히는 작업도 하고 있습니다. 
+  
+  
+* 현업 데이터를 기준으로 분석을 진행하실 때는,  
+이상치 분석에는 크게 시간을 들이지 않으시는 것을 추천 드립니다. 
+  
+* 분석을 진행하기 전에 간단하게 boxplot을 통해 이상치를 확인하시고,  
+이상치를 제거할지, 대체할지 판단하시어 제거/대체 하신 후 분석을 진행하시면 됩니다. 
+  
+* 이번에는 **R 내장 데이터인 mtcars 데이터**를 활용하여 진행해보겠습니다.  
+  
+---
+  
+### 2.1 이상치 확인  
+  
+* 통계적으로 이상치를 판단하는 기준은 몇가지가 있지만,  
+저는 일반적으로 상/하위 3 표준편차를 벗어나거나 1.5 IQR을 벗어나면 극단치(이상치)로 판단합니다. 
+
+    ![이상치 한눈에 보기(출처: 실무에 써먹는 머신러닝(with R))](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&amp;fname=https%3A%2F%2Fk.kakaocdn.net%2Fdn%2Fqlza7%2FbtqwTw0Ibbu%2FyX68PMhhSGvQCBbna8UKGk%2Fimg.png)
+
+  
+* 위 그림으로 보시면 더 명확하게 이해가 되실 것 같습니다.  
+
+`$$하위\ 이상값은\\  1분위수 - 1.5 \times (IQR:3분위수 - 1분위수) \ 보다\ 작은\ 값$$`  
+  
+$$상위\ 이상값은 \\ 3분위수 + 1.5 \times (IQR:3분위수 - 1분위수) \ 보다\ 큰\ 값 $$
+  
+---
+  
+* R에서는 boxplot을 통해 간단하게 이상치가 있는지 확인하실 수 있습니다.  
+먼저, mtcars 데이터를 살펴볼까요?  
+
+  
+
+```r
+# tidyverse 라이브러리를 불러옵니다.  
+library(tidyverse) 
+
+# R 내장 데이터인 mtcars를 살펴봅니다.
+glimpse(mtcars)
+```
+  
+* mtcars 데이터는 아래와 같은 변수로 구성되어 있습니다. 
+  
+  
+```
+[, 1]	mpg	Miles/(US) gallon
+[, 2]	cyl	Number of cylinders
+[, 3]	disp	Displacement (cu.in.)
+[, 4]	hp	Gross horsepower
+[, 5]	drat	Rear axle ratio
+[, 6]	wt	Weight (1000 lbs)
+[, 7]	qsec	1/4 mile time
+[, 8]	vs	Engine (0 = V-shaped, 1 = straight)
+[, 9]	am	Transmission (0 = automatic, 1 = manual)
+[,10]	gear	Number of forward gears
+[,11]	carb	Number of carburetors
+```
+  
+---
+  
+  
+* mtcars 데이터의 wt 값의 이상치를 보기 위해 아래와 같이 박스플롯을 그려보았습니다. 
+  
+
+
+```r
+# mtcars 데이터 중 wt데이터에 이상치가 있는지 살펴봅니다. 
+boxplot(mtcars$wt)
+```
+
+&lt;img src="05-R-program-data_preprocessing_files/figure-html/boxplot with mtcars-1.png" style="display: block; margin: auto;" /&gt;
+  
+* 상위 극단치 경계값을 넘어가는 값이 보입니다.  
+
+---
+  
+* boxplot을 통해 위와 같이 극단치를 넘어가는 이상치가 있는 것으로 확인 된 경우,  
+아래와 같이 summary 함수, IQR 함수, which 함수를 통해 이상치가 포함되어 있는 행을 확인하실 수 있습니다. 
+
+
+```r
+# summary 함수를 통해 분위수를 확인하고, 
+summary(mtcars$wt)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   1.513   2.581   3.325   3.217   3.610   5.424
+```
+
+```r
+# 3분위 값에 1.5IQR을 더한 상위 극단치보다 큰 값이 몇 행에 있는지 확인합니다. 
+which(mtcars$wt&gt;summary(mtcars$wt)[5] + 1.5*IQR(mtcars$wt))
+```
+
+```
+## [1] 15 16 17
+```
+
+```r
+# 15, 16, 17번째 행의 wt 값이 이상치로 확인되었습니다. 
+# boxplot에서 확인했듯이 하위 극단치는 없는 것으로 나옵니다. 
+which(mtcars$wt&lt;summary(mtcars$wt)[2] - 1.5*IQR(mtcars$wt))
+```
+
+```
+## integer(0)
+```
+
+---
+  
+### 2.2 이상치 제거 및 대체  
+
+#### 2.2.1 이상치 제거 
+
+* 앞서 상/하위 극단치를 확인 한 결과, 상위 극단치만 있는 것으로 확인 되었습니다.  
+* 이상치를 제거하기 위해서는 아래와 같이 이상치를 갖고 있는 행만 제거해주면 됩니다. 
+
+
+```r
+mtcars_reshape &lt;- mtcars[-which(mtcars$wt&gt;summary(mtcars$wt)[5] + 1.5*IQR(mtcars$wt)),]
+boxplot(mtcars_reshape$wt)
+```
+
+&lt;img src="05-R-program-data_preprocessing_files/figure-html/eliminate-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+* mtcars[-which(mtcars\$wt&gt;summary(mtcars\$wt)[5] + 1.5*IQR(mtcars\$wt)),] 의 뜻은  
+mtcars 데이터 중, 극단치보다 높은 행만 - 제거 하겠다는 것입니다.  
+  
+* 극단치보다 높은 값을 제거하고, 다시 박스플롯을 그려보니, 상위 극단치가 제거 되었음을 알 수 있습니다.  
+  
+---
+  
+#### 2.2.2 이상치 대체 
+
+* 이상치를 대체하고자 하시면, 아래와 같이 직접 값을 지정해주시면 됩니다.  
+저는 상위 극단치를 넘는 이상치를 NA 값으로 수정해보았습니다. 
+
+mtcars[which(mtcars\$wt&gt;summary(mtcars\$wt)[5] + 1.5*IQR(mtcars\$wt)),]\$wt &lt;- NA
+
+* 위의 행을 실행하고 나면, 이상치가 있던 15,16,17행에 NA 값이 들어가 있는 것을 보실 수 있습니다. 
+
+```r
+mtcars[which(mtcars$wt&gt;summary(mtcars$wt)[5] + 1.5*IQR(mtcars$wt)),]$wt &lt;- NA
+mtcars$wt
+```
+  
+---
+  
+### 2.3 이상치 처리 패키지 
+
+* 이상치를 찾고 처리하기 위해  
+DMwR(카이제곱분포 활용), outlier(표준점수 활용), Grubb's Test(편차 활용),  
+Robust Test(MAD(중간값과 Xi값 편차) 활용) 등 다양한 패키지와 함수들이 준비되어 있습니다.  
+  
+* 더 자세한 내용에 대해서는 아래 URL 참고 부탁드립니다.  
+  
+  
+  [R 잡음 처리(MAF), 이상치 검출(카이제곱분포, LOF)](https://pubdata.tistory.com/53)
+  
+  [Missing Data, 이상치 처리 (DMwR)](https://analysis-flood.tistory.com/24)
+  
+  [Grubb's Test, Robust Test](https://sosal.kr/945)  
+  
+  
+##### 본 학습은 [나성호의 R 데이터 분석 입문](https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=281235259)과 [Do it 쉽게 배우는 R 데이터 분석](http://www.kyobobook.co.kr/product/detailViewKor.laf?mallGb=KOR&amp;ejkGb=KOR&amp;barcode=9791187370949)을 기반으로 이루어집니다 
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
