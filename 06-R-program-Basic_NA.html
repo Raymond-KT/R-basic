@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>R programming_lecture 6</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="kwangtae kim" />
+    <script src="libs/header-attrs-2.11/header-attrs.js"></script>
+    <script src="libs/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# R programming_lecture 6
+## ⚔<br/>with xaringan
+### kwangtae kim
+### Yonsei IOPsy
+### 2022/02/01 (updated: 2022-02-12)
+
+---
+
+
+
+
+
+
+
+
+
+
+
+# 05. 데이터 가공하기
+
+## 0. 학습 안내  
+
+  * **데이터를 가공하는 방법**에 대해 안내드리겠습니다.  
+    
+  * 실제 업무를 하실 때, 아래와 같이 원자료에서 내가 원하는 데이터만
+  **추출**하고 **요약**하는 것은 정말 자주하실 것입니다.  
+    
+  * 앞서 EDA 패키지를 소개해드리면서, 원자료를 조금 더 빠르게 탐색할 수 있는 
+  방법을 안내드렸는데 이번 시간에는 원자료 탐색 이후 데이터 가공하여 원하는 형태로 만드는 것을 배웁니다. 
+  
+ 
+
+![](img/06_00.png)
+
+---
+
+
+## 1. 데이터 가공하기
+
+### 1.1 데이터 가공 시 자주 사용하는 함수
+
+함수       |기능
+:------------:|:------------------
+filter()   |원하는 행 추출
+select()   |원하는 열(변수) 추출
+arrange()  |정렬
+mutate()   |원자료에 변수 추가
+summarise()|통계치 산출
+group_by() |집단별로 나누기
+left_join()|데이터 합치기(열)
+bind_cols()|데이터 합치기(열)
+cbind()|데이터 합치기(열)
+bind_rows()|데이터 합치기(행)
+rbind()|데이터 합치기(행)
+aggregate()|원하는 열(변수)의 요약통계량 확인
+
+---
+
+### 1.2 조건에 맞는 데이터만 추출하기
+
+#### 1.2.1패키지 로드 &amp; 데이터 준비
+
+
+```r
+library(tidyverse)
+
+# 지난 시간에 공유드린 IBM_HR Data를 가져와 주세요 
+mydata &lt;-  read.table("clipboard-16384", sep="\t", fill=T, header = T) 
+
+# Data가 잘 가져와졌는지 확인
+# [참고] 단축키 [Ctrl+Shit+M]으로 %&gt;% 기호 입력
+mydata %&gt;% head()
+
+# Data가 잘 가져와졌는지 확인
+# R 4.1 버전부터 추가된 | &gt; 기본 파이프 활용
+mydata|&gt;head()
+```
+
+
+---
+
+#### 1.2.2 filter 함수 사용하기
+
+&gt; **filter(data, variable %in% 조건): data에 있는 variable 중 조건에 맞는 행만 추출하라**
+
+  * 아래 그림과 같이 데이터에서 원하는 조건의 행만 추출합니다. 
+![](img/06_01.png)
+
+
+  * IBM 데이터에서 퇴사(Attrition=Yes)를 한 사람만 추출해봅니다. 
+
+```r
+# exam에서 class가 1인 경우만 추출하여 출력
+mydata %&gt;% filter(Attrition %in% 'Yes')
+```
+
+* IBM 데이터에서 재직(Attrition=No)중인 사람만 추출해봅니다. 
+
+```r
+# exam에서 class가 1인 경우만 추출하여 출력
+mydata %&gt;% filter(Attrition %in% 'No')
+```
+  
+
+* IBM 데이터에서 sales부서와 R&amp;D 부서 사람만 추출해봅니다. 
+
+```r
+# exam에서 class가 1인 경우만 추출하여 출력
+mydata %&gt;% filter(Department %in% c('Sales', 'Research &amp; Development'))
+```
+
+---
+
+#### 다양한 조건으로 원하는 행 추출 
+
+  * 초과, 미만, 이상, 이하 조건 걸기
+
+
+```r
+# DailyRate가 1000을 초과하는 경우
+mydata %&gt;% filter(DailyRate &gt; 1000)
+```
+  
+
+  * 여러 조건을 충족하는 행 추출하기
+
+
+```r
+# 퇴사했으면서 DailyRate가 1000 이상인 사람
+mydata %&gt;% filter(DailyRate&gt;=1000, Attrition %in% 'Yes')
+```
+
+
+  * 여러 조건 중 하나 이상 충족하는 행 추출하기
+
+
+```r
+# DailyRate가 1000이상이거나, 집과의 거리가 10마일 이상인 경우
+mydata %&gt;% filter(DailyRate &gt;= 1000 | DistanceFromHome &gt;= 10)
+```
+
+---
+
+#### 1.2.3 R에서 사용하는 기호들
+
+.left-column[
+논리 연산자  |기능
+:-------:|:---------------
+&lt;            | 작다
+&lt;=           | 작거나 같다
+&gt;            | 크다
+&gt;=           | 크거나 같다
+==           | 같다
+!=           | 같지 않다
+│            | 또는
+&amp;            | 그리고
+%in%         | 매칭 확인
+]
+
+.right-column[
+산술 연산자|기능
+:-------:|:---------------
++          | 더하기
+-          | 빼기
+*          | 곱하기
+/          | 나누기
+^ , **     | 제곱
+%/%        | 나눗셈의 몫
+%%         | 나눗셈의 나머지
+]
+
+---
+
+### 1.3 혼자서 해보기
+
+R에 내장되어 있는 `mpg` 데이터를 이용해 분석 문제를 해결해 보세요.
+
+  * Q1. 자동차 배기량에 따라 고속도로 연비가 다른지 알아보려고 합니다. `displ`(배기량)이 `4` 이하인 자동차와 `5` 이상인 자동차 중 어떤 자동차의 `hwy`(고속도로 연비)가 평균적으로 더 높은지 알아보세요.
+  
+  * Q2. 자동차 제조 회사에 따라 도시 연비가 다른지 알아보려고 합니다. `"audi"`와 `"toyota"` 중 어느 `manufacturer`(자동차 제조 회사)의 `cty`(도시 연비)가 평균적으로 더 높은지 알아보세요.
+  
+  * Q3. `"chevrolet"`, `"ford"`, `"honda"` 자동차의 고속도로 연비 평균을 알아보려고 합니다. 이 회사들의 자동차를 추출한 뒤 `hwy` 전체 평균을 구해보세요.
+
+---
+
+#### 1.3.1 힌트
+
+* Q1. 특정 조건에 해당하는 데이터를 추출해서 평균을 구하면 해결할 수 있는 문제입니다. `filter()`를 이용해 `displ` 변수가 특정 값을 지닌 행을 추출해 새로운 변수에 할당한 다음 평균을 구해보세요.
+
+* Q2. 앞 문제와 동일한 절차로 해결하면 됩니다. 단, 변수의 값이 숫자가 아니라 문자라는 점이 다릅니다.
+
+* Q3. '여러 조건 중 하나 이상 충족'하면 추출하도록 `filter()` 함수를 구성해보세요. 이렇게 추출한 데이터로 평균을 구하면 됩니다. `%in%`를 이용하면 코드를 짧게 만들 수 있습니다.
+
+---
+
+#### 1.3.2 정답
+
+Q1. 자동차 배기량에 따라 고속도로 연비가 다른지 알아보려고 합니다. `displ`(배기량)이 `4` 이하인 자동차와 `5` 이상인 자동차 중 어떤 자동차의 `hwy`(고속도로 연비)가 평균적으로 더 높은지 알아보세요.
+
+
+```r
+mpg &lt;- as.data.frame(ggplot2::mpg)   # mpg 데이터 불러오기
+
+mpg_a &lt;- mpg %&gt;% filter(displ &lt;= 4)  # displ 4 이하 추출
+mpg_b &lt;- mpg %&gt;% filter(displ &gt;= 5)  # displ 5 이상 추출
+
+mean(mpg_a$hwy)  # displ 4 이하 hwy 평균
+```
+
+```
+## [1] 25.96319
+```
+
+```r
+mean(mpg_b$hwy)  # displ 5 이상 hwy 평균
+```
+
+```
+## [1] 18.07895
+```
+
+---
+
+Q2. 자동차 제조 회사에 따라 도시 연비가 다른지 알아보려고 합니다. `"audi"`와 `"toyota"` 중 어느 `manufacturer`(자동차 제조 회사)의 `cty`(도시 연비)가 평균적으로 더 높은지 알아보세요.
+
+
+```r
+mpg_audi &lt;- mpg %&gt;% filter(manufacturer == "audi")      # audi 추출
+mpg_toyota &lt;- mpg %&gt;% filter(manufacturer == "toyota")  # toyota 추출
+
+mean(mpg_audi$cty)    # audi의 cty 평균
+```
+
+```
+## [1] 17.61111
+```
+
+```r
+mean(mpg_toyota$cty)  # toyota의 cty 평균
+```
+
+```
+## [1] 18.52941
+```
+
+---
+
+Q3. `"chevrolet"`, `"ford"`, `"honda"` 자동차의 고속도로 연비 평균을 알아보려고 합니다. 이 회사들의 자동차를 추출한 뒤 `hwy` 전체 평균을 구해보세요.
+
+
+```r
+# manufacturer가 chevrolet, ford, honda에 해당하면 추출
+mpg_new &lt;- mpg %&gt;% filter(manufacturer %in% c("chevrolet", "ford", "honda"))
+mean(mpg_new$hwy)
+```
+
+```
+## [1] 22.50943
+```
+
+---
+
+## 2. 필요 변수만 추출
+  
+&gt; **select(data, variable): data에서 variable만 추출하라**
+
+![](img/06_02.png)
+
+  * mydata에서 필요한 변수만 추출해봅니다. 
+
+### 2.1 변수 하나 추출하기
+
+```r
+# Attrition만 추출하기
+mydata %&gt;% select(Attrition)  
+```
+### 2.2 여러 변수 추출하기
+
+
+```r
+# Age, Attrition, DistanceFromHome 추출하기 
+
+mydata %&gt;% select(Age, Attrition, DistanceFromHome)  
+```
+
+### 2.3 변수 제외하기
+
+
+```r
+# age 제외
+mydata %&gt;% select(-age, -Attrition)  
+```
+
+---
+
+### 2.4 원하는 변수에서 원하는 행 추출하기
+
+  * filter함수와 select함수는 함께 자주 사용됩니다. 
+
+
+```r
+# 퇴사자의 DailyRate만 추출
+mydata %&gt;% 
+  filter(Attrition %in% "Yes") %&gt;% 
+  select(DailyRate)
+```
+
+
+
+```r
+# 퇴사자의 DailyRate만 추출
+mydata %&gt;% 
+  filter(Attrition %in% "Yes") %&gt;% 
+  select(Gender, DailyRate) 
+```
+
+* 필터링한 데이터를 중간에 저장하고, 계속 진행하기 
+
+
+```r
+# 퇴사자의 DailyRate만 추출
+mydata %&gt;% 
+  filter(Attrition %in% "Yes") %&gt;% 
+  {. -&gt;&gt; mydata_Yes} %&gt;% 
+  select(Gender, DailyRate) 
+```
+
+* 데이터를 중간에 저장하고 계속 진행할 수 있습니다.  
+
+
+```r
+mydata_Yes
+```
+
+---
+
+### 2.5 혼자서 해보기
+
+`mpg` 데이터를 이용해서 분석 문제를 해결해보세요.
+
+- Q1. `mpg` 데이터는 11개 변수로 구성되어 있습니다. 이 중 일부만 추출해서 분석에 활용하려고 합니다. `mpg` 데이터에서 `class`(자동차 종류), `cty`(도시 연비) 변수를 추출해 새로운 데이터를 만드세요. 새로 만든 데이터의 일부를 출력해서 두 변수로만 구성되어 있는지 확인하세요.
+
+- Q2. 자동차 종류에 따라 도시 연비가 다른지 알아보려고 합니다. 앞에서 추출한 데이터를 이용해서 `class`(자동차 종류)가 `"suv"`인 자동차와 `"compact"`인 자동차 중 어떤 자동차의 `cty`(도시 연비)가 더 높은지 알아보세요.
+
+---
+
+#### 2.5.1 힌트
+
+Q1. `select()`로 변수를 추출해서 새로운 데이터를 만들어 보세요.
+
+Q2. `filter()`로 조건에 해당하는 데이터를 추출한 뒤 평균을 구하면 해결할 수 있습니다.
+
+---
+
+#### 2.5.2 정답
+
+Q1. `mpg` 데이터는 11개 변수로 구성되어 있습니다. 이 중 일부만 추출해서 분석에 활용하려고 합니다. `mpg` 데이터에서 `class`(자동차 종류), `cty`(도시 연비) 변수를 추출해 새로운 데이터를 만드세요. 새로 만든 데이터의 일부를 출력해서 두 변수로만 구성되어 있는지 확인하세요.
+
+
+```r
+mpg &lt;- as.data.frame(ggplot2::mpg)  # mpg 데이터 불러오기
+
+df &lt;- mpg %&gt;% select(class, cty)    # class, cty 변수 추출
+head(df)                            # df 일부 출력
+```
+
+```
+##     class cty
+## 1 compact  18
+## 2 compact  21
+## 3 compact  20
+## 4 compact  21
+## 5 compact  16
+## 6 compact  18
+```
+
+---
+
+Q2. 자동차 종류에 따라 도시 연비가 다른지 알아보려고 합니다. 앞에서 추출한 데이터를 이용해서 `class`(자동차 종류)가 `"suv"`인 자동차와 `"compact"`인 자동차 중 어떤 자동차의 `cty`(도시 연비)가 더 높은지 알아보세요.
+
+```r
+df_suv &lt;- df %&gt;% filter(class == "suv")          # class가 suv인 행 추출
+df_compact &lt;- df %&gt;% filter(class == "compact")  # class가 compact인 행 추출
+
+mean(df_suv$cty)                                 # suv의 cty 평균
+```
+
+```
+## [1] 13.5
+```
+
+```r
+mean(df_compact$cty)                             # compact의 cty 평균
+```
+
+```
+## [1] 20.12766
+```
+
+---
+
+## 3. 순서대로 정렬하기 
+
+&gt; **arrange(variable): variable의 오름차순으로 정렬하라**
+
+* 아래 그림과 같이 내가 원하는 순서로 데이터를 정렬할 수 있습니다. 
+
+
+
+![](img/06_03.png)
+
+---
+
+### 3.1 오름차순으로 정렬하기
+
+
+```r
+mydata %&gt;% arrange(DailyRate)  
+```
+
+
+### 3.2 내림차순으로 정렬하기
+
+
+```r
+mydata %&gt;% arrange(dest(DailyRate))
+```
+
+### 3.3 정렬 기준 변수 여러개 지정
+
+
+```r
+mydata %&gt;% arrange(DailyRate, Attrition)  
+```
+
+---
+
+### 3.4 혼자서 해보기
+
+`mpg` 데이터를 이용해서 분석 문제를 해결해보세요.
+
+- `"audi"`에서 생산한 자동차 중에 어떤 자동차 모델의 `hwy`(고속도로 연비)가 높은지 알아보려고 합니다. `"audi"`에서 생산한 자동차 중 `hwy`가 1~5위에 해당하는 자동차의 데이터를 출력하세요.
+
+
+#### 3.4.1 힌트
+
+
+`filter()`를 이용해 `"audi"`에서 생산한 자동차만 추출하고, `arrange()`로 `hwy`를 내림차순 정렬하면 됩니다. `head()`를 이용하면 이 중 특정 순위에 해당하는 자동차만 출력할 수 있습니다.
+
+---
+
+#### 3.4.2 정답
+
+```r
+mpg &lt;- as.data.frame(ggplot2::mpg)          # mpg 데이터 불러오기
+
+mpg %&gt;% filter(manufacturer == "audi") %&gt;%  # audi 추출
+  arrange(desc(hwy)) %&gt;%                    # hwy 내림차순 정렬
+  head(5)                                   # 5행까지 출력
+```
+
+```
+##   manufacturer      model displ year cyl      trans drv cty hwy fl   class
+## 1         audi         a4   2.0 2008   4 manual(m6)   f  20  31  p compact
+## 2         audi         a4   2.0 2008   4   auto(av)   f  21  30  p compact
+## 3         audi         a4   1.8 1999   4   auto(l5)   f  18  29  p compact
+## 4         audi         a4   1.8 1999   4 manual(m5)   f  21  29  p compact
+## 5         audi a4 quattro   2.0 2008   4 manual(m6)   4  20  28  p compact
+```
+
+---
+
+## 4. 파생변수 추가하기
+
+&gt; **mutate(data, new_variable = ...): data에 ...을 통해 생성한 new_variable을 추가하라**
+
+* mutate를 통해 새로운 변수를 추가해봅니다
+
+![](img/06_04.png)
+
+
+---
+
+### 4.1 파생변수 하나 추가하기
+
+
+```r
+mydata %&gt;%
+  mutate(total = DailyRate * DistanceFromHome) %&gt;%  # 총합 변수 추가
+  head                                          # 일부 추출
+```
+
+### 4.2 여러 파생변수 한 번에 추가하기
+
+```r
+mydata %&gt;%
+  mutate(total = DailyRate * DistanceFromHome,  # 총합 변수 추가
+         mean = YearsAtCompany/YearsInCurrentRole) %&gt;%   # 총평균 변수 추가
+  head                                              # 일부 추출
+```
+
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

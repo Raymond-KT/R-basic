@@ -1,0 +1,459 @@
+---
+title: "R programming_lecture 6"
+subtitle: "⚔<br/>with xaringan"
+author: "kwangtae kim"
+institute: "Yonsei IOPsy"
+date: "2022/02/01 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(base_color = "#43418A",
+                  base_font_size = "14px",
+                  text_font_size = "1rem",
+                  header_h1_font_size = "2.2rem",
+                  header_h2_font_size = "2rem",
+                  header_h3_font_size = "1.7rem",
+                  header_background_auto = FALSE,
+                  code_font_size = "1.2rem",
+
+
+)
+
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringanExtra::use_clipboard()
+```
+
+```{r include=FALSE}
+knitr::opts_chunk$set(fig.align = "center", message=F, warning=F, fig.height = 3, cache=T, dpi = 300)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+
+```
+
+
+# 05. 데이터 가공하기
+
+## 0. 학습 안내  
+
+  * **데이터를 가공하는 방법**에 대해 안내드리겠습니다.  
+    
+  * 실제 업무를 하실 때, 아래와 같이 원자료에서 내가 원하는 데이터만
+  **추출**하고 **요약**하는 것은 정말 자주하실 것입니다.  
+    
+  * 앞서 EDA 패키지를 소개해드리면서, 원자료를 조금 더 빠르게 탐색할 수 있는 
+  방법을 안내드렸는데 이번 시간에는 원자료 탐색 이후 데이터 가공하여 원하는 형태로 만드는 것을 배웁니다. 
+  
+ 
+
+![](img/06_00.png)
+
+---
+
+
+## 1. 데이터 가공하기
+
+### 1.1 데이터 가공 시 자주 사용하는 함수
+
+함수       |기능
+:------------:|:------------------
+filter()   |원하는 행 추출
+select()   |원하는 열(변수) 추출
+arrange()  |정렬
+mutate()   |원자료에 변수 추가
+summarise()|통계치 산출
+group_by() |집단별로 나누기
+left_join()|데이터 합치기(열)
+bind_cols()|데이터 합치기(열)
+cbind()|데이터 합치기(열)
+bind_rows()|데이터 합치기(행)
+rbind()|데이터 합치기(행)
+aggregate()|원하는 열(변수)의 요약통계량 확인
+
+---
+
+### 1.2 조건에 맞는 데이터만 추출하기
+
+#### 1.2.1패키지 로드 & 데이터 준비
+
+```{r eval=FALSE}
+library(tidyverse)
+
+# 지난 시간에 공유드린 IBM_HR Data를 가져와 주세요 
+mydata <-  read.table("clipboard-16384", sep="\t", fill=T, header = T) 
+
+# Data가 잘 가져와졌는지 확인
+# [참고] 단축키 [Ctrl+Shit+M]으로 %>% 기호 입력
+mydata %>% head()
+
+# Data가 잘 가져와졌는지 확인
+# R 4.1 버전부터 추가된 | > 기본 파이프 활용
+mydata|>head()
+
+```
+
+
+---
+
+#### 1.2.2 filter 함수 사용하기
+
+> **filter(data, variable %in% 조건): data에 있는 variable 중 조건에 맞는 행만 추출하라**
+
+  * 아래 그림과 같이 데이터에서 원하는 조건의 행만 추출합니다. 
+![](img/06_01.png)
+
+
+  * IBM 데이터에서 퇴사(Attrition=Yes)를 한 사람만 추출해봅니다. 
+```{r eval=FALSE}
+# exam에서 class가 1인 경우만 추출하여 출력
+mydata %>% filter(Attrition %in% 'Yes')
+```
+
+* IBM 데이터에서 재직(Attrition=No)중인 사람만 추출해봅니다. 
+```{r eval=FALSE}
+# exam에서 class가 1인 경우만 추출하여 출력
+mydata %>% filter(Attrition %in% 'No')
+```
+  
+
+* IBM 데이터에서 sales부서와 R&D 부서 사람만 추출해봅니다. 
+```{r eval=FALSE}
+# exam에서 class가 1인 경우만 추출하여 출력
+mydata %>% filter(Department %in% c('Sales', 'Research & Development'))
+```
+
+---
+
+#### 다양한 조건으로 원하는 행 추출 
+
+  * 초과, 미만, 이상, 이하 조건 걸기
+
+```{r eval=FALSE}
+# DailyRate가 1000을 초과하는 경우
+mydata %>% filter(DailyRate > 1000)
+```
+  
+
+  * 여러 조건을 충족하는 행 추출하기
+
+```{r eval=FALSE}
+# 퇴사했으면서 DailyRate가 1000 이상인 사람
+mydata %>% filter(DailyRate>=1000, Attrition %in% 'Yes')
+```
+
+
+  * 여러 조건 중 하나 이상 충족하는 행 추출하기
+
+```{r eval=FALSE}
+# DailyRate가 1000이상이거나, 집과의 거리가 10마일 이상인 경우
+mydata %>% filter(DailyRate >= 1000 | DistanceFromHome >= 10)
+```
+
+---
+
+#### 1.2.3 R에서 사용하는 기호들
+
+.left-column[
+논리 연산자  |기능
+:-------:|:---------------
+<            | 작다
+<=           | 작거나 같다
+>            | 크다
+>=           | 크거나 같다
+==           | 같다
+!=           | 같지 않다
+│            | 또는
+&            | 그리고
+%in%         | 매칭 확인
+]
+
+.right-column[
+산술 연산자|기능
+:-------:|:---------------
++          | 더하기
+-          | 빼기
+*          | 곱하기
+/          | 나누기
+^ , **     | 제곱
+%/%        | 나눗셈의 몫
+%%         | 나눗셈의 나머지
+]
+
+---
+
+### 1.3 혼자서 해보기
+
+R에 내장되어 있는 `mpg` 데이터를 이용해 분석 문제를 해결해 보세요.
+
+  * Q1. 자동차 배기량에 따라 고속도로 연비가 다른지 알아보려고 합니다. `displ`(배기량)이 `4` 이하인 자동차와 `5` 이상인 자동차 중 어떤 자동차의 `hwy`(고속도로 연비)가 평균적으로 더 높은지 알아보세요.
+  
+  * Q2. 자동차 제조 회사에 따라 도시 연비가 다른지 알아보려고 합니다. `"audi"`와 `"toyota"` 중 어느 `manufacturer`(자동차 제조 회사)의 `cty`(도시 연비)가 평균적으로 더 높은지 알아보세요.
+  
+  * Q3. `"chevrolet"`, `"ford"`, `"honda"` 자동차의 고속도로 연비 평균을 알아보려고 합니다. 이 회사들의 자동차를 추출한 뒤 `hwy` 전체 평균을 구해보세요.
+
+---
+
+#### 1.3.1 힌트
+
+* Q1. 특정 조건에 해당하는 데이터를 추출해서 평균을 구하면 해결할 수 있는 문제입니다. `filter()`를 이용해 `displ` 변수가 특정 값을 지닌 행을 추출해 새로운 변수에 할당한 다음 평균을 구해보세요.
+
+* Q2. 앞 문제와 동일한 절차로 해결하면 됩니다. 단, 변수의 값이 숫자가 아니라 문자라는 점이 다릅니다.
+
+* Q3. '여러 조건 중 하나 이상 충족'하면 추출하도록 `filter()` 함수를 구성해보세요. 이렇게 추출한 데이터로 평균을 구하면 됩니다. `%in%`를 이용하면 코드를 짧게 만들 수 있습니다.
+
+---
+
+#### 1.3.2 정답
+
+Q1. 자동차 배기량에 따라 고속도로 연비가 다른지 알아보려고 합니다. `displ`(배기량)이 `4` 이하인 자동차와 `5` 이상인 자동차 중 어떤 자동차의 `hwy`(고속도로 연비)가 평균적으로 더 높은지 알아보세요.
+
+```{r}
+mpg <- as.data.frame(ggplot2::mpg)   # mpg 데이터 불러오기
+
+mpg_a <- mpg %>% filter(displ <= 4)  # displ 4 이하 추출
+mpg_b <- mpg %>% filter(displ >= 5)  # displ 5 이상 추출
+
+mean(mpg_a$hwy)  # displ 4 이하 hwy 평균
+mean(mpg_b$hwy)  # displ 5 이상 hwy 평균
+```
+
+---
+
+Q2. 자동차 제조 회사에 따라 도시 연비가 다른지 알아보려고 합니다. `"audi"`와 `"toyota"` 중 어느 `manufacturer`(자동차 제조 회사)의 `cty`(도시 연비)가 평균적으로 더 높은지 알아보세요.
+
+```{r}
+mpg_audi <- mpg %>% filter(manufacturer == "audi")      # audi 추출
+mpg_toyota <- mpg %>% filter(manufacturer == "toyota")  # toyota 추출
+
+mean(mpg_audi$cty)    # audi의 cty 평균
+mean(mpg_toyota$cty)  # toyota의 cty 평균
+```
+
+---
+
+Q3. `"chevrolet"`, `"ford"`, `"honda"` 자동차의 고속도로 연비 평균을 알아보려고 합니다. 이 회사들의 자동차를 추출한 뒤 `hwy` 전체 평균을 구해보세요.
+
+```{r}
+# manufacturer가 chevrolet, ford, honda에 해당하면 추출
+mpg_new <- mpg %>% filter(manufacturer %in% c("chevrolet", "ford", "honda"))
+mean(mpg_new$hwy)
+```
+
+---
+
+## 2. 필요 변수만 추출
+  
+> **select(data, variable): data에서 variable만 추출하라**
+
+![](img/06_02.png)
+
+  * mydata에서 필요한 변수만 추출해봅니다. 
+
+### 2.1 변수 하나 추출하기
+```{r eval=FALSE}
+# Attrition만 추출하기
+mydata %>% select(Attrition)  
+```
+### 2.2 여러 변수 추출하기
+
+```{r eval=FALSE}
+# Age, Attrition, DistanceFromHome 추출하기 
+
+mydata %>% select(Age, Attrition, DistanceFromHome)  
+
+```
+
+### 2.3 변수 제외하기
+
+```{r eval=FALSE}
+# age 제외
+mydata %>% select(-age, -Attrition)  
+```
+
+---
+
+### 2.4 원하는 변수에서 원하는 행 추출하기
+
+  * filter함수와 select함수는 함께 자주 사용됩니다. 
+
+```{r eval=FALSE}
+# 퇴사자의 DailyRate만 추출
+mydata %>% 
+  filter(Attrition %in% "Yes") %>% 
+  select(DailyRate)
+```
+
+
+```{r eval=FALSE}
+# 퇴사자의 DailyRate만 추출
+mydata %>% 
+  filter(Attrition %in% "Yes") %>% 
+  select(Gender, DailyRate) 
+
+```
+
+* 필터링한 데이터를 중간에 저장하고, 계속 진행하기 
+
+```{r eval=FALSE}
+# 퇴사자의 DailyRate만 추출
+mydata %>% 
+  filter(Attrition %in% "Yes") %>% 
+  {. ->> mydata_Yes} %>% 
+  select(Gender, DailyRate) 
+
+```
+
+* 데이터를 중간에 저장하고 계속 진행할 수 있습니다.  
+
+```{r eval=FALSE}
+
+mydata_Yes
+
+```
+
+---
+
+### 2.5 혼자서 해보기
+
+`mpg` 데이터를 이용해서 분석 문제를 해결해보세요.
+
+- Q1. `mpg` 데이터는 11개 변수로 구성되어 있습니다. 이 중 일부만 추출해서 분석에 활용하려고 합니다. `mpg` 데이터에서 `class`(자동차 종류), `cty`(도시 연비) 변수를 추출해 새로운 데이터를 만드세요. 새로 만든 데이터의 일부를 출력해서 두 변수로만 구성되어 있는지 확인하세요.
+
+- Q2. 자동차 종류에 따라 도시 연비가 다른지 알아보려고 합니다. 앞에서 추출한 데이터를 이용해서 `class`(자동차 종류)가 `"suv"`인 자동차와 `"compact"`인 자동차 중 어떤 자동차의 `cty`(도시 연비)가 더 높은지 알아보세요.
+
+---
+
+#### 2.5.1 힌트
+
+Q1. `select()`로 변수를 추출해서 새로운 데이터를 만들어 보세요.
+
+Q2. `filter()`로 조건에 해당하는 데이터를 추출한 뒤 평균을 구하면 해결할 수 있습니다.
+
+---
+
+#### 2.5.2 정답
+
+Q1. `mpg` 데이터는 11개 변수로 구성되어 있습니다. 이 중 일부만 추출해서 분석에 활용하려고 합니다. `mpg` 데이터에서 `class`(자동차 종류), `cty`(도시 연비) 변수를 추출해 새로운 데이터를 만드세요. 새로 만든 데이터의 일부를 출력해서 두 변수로만 구성되어 있는지 확인하세요.
+
+```{r}
+mpg <- as.data.frame(ggplot2::mpg)  # mpg 데이터 불러오기
+
+df <- mpg %>% select(class, cty)    # class, cty 변수 추출
+head(df)                            # df 일부 출력
+
+```
+
+---
+
+Q2. 자동차 종류에 따라 도시 연비가 다른지 알아보려고 합니다. 앞에서 추출한 데이터를 이용해서 `class`(자동차 종류)가 `"suv"`인 자동차와 `"compact"`인 자동차 중 어떤 자동차의 `cty`(도시 연비)가 더 높은지 알아보세요.
+```{r}
+df_suv <- df %>% filter(class == "suv")          # class가 suv인 행 추출
+df_compact <- df %>% filter(class == "compact")  # class가 compact인 행 추출
+
+mean(df_suv$cty)                                 # suv의 cty 평균
+mean(df_compact$cty)                             # compact의 cty 평균
+```
+
+---
+
+## 3. 순서대로 정렬하기 
+
+> **arrange(variable): variable의 오름차순으로 정렬하라**
+
+* 아래 그림과 같이 내가 원하는 순서로 데이터를 정렬할 수 있습니다. 
+
+
+
+![](img/06_03.png)
+
+---
+
+### 3.1 오름차순으로 정렬하기
+
+```{r eval=FALSE}
+mydata %>% arrange(DailyRate)  
+```
+
+
+### 3.2 내림차순으로 정렬하기
+
+```{r eval=FALSE}
+mydata %>% arrange(dest(DailyRate))
+```
+
+### 3.3 정렬 기준 변수 여러개 지정
+
+```{r eval=FALSE}
+mydata %>% arrange(DailyRate, Attrition)  
+```
+
+---
+
+### 3.4 혼자서 해보기
+
+`mpg` 데이터를 이용해서 분석 문제를 해결해보세요.
+
+- `"audi"`에서 생산한 자동차 중에 어떤 자동차 모델의 `hwy`(고속도로 연비)가 높은지 알아보려고 합니다. `"audi"`에서 생산한 자동차 중 `hwy`가 1~5위에 해당하는 자동차의 데이터를 출력하세요.
+
+
+#### 3.4.1 힌트
+
+
+`filter()`를 이용해 `"audi"`에서 생산한 자동차만 추출하고, `arrange()`로 `hwy`를 내림차순 정렬하면 됩니다. `head()`를 이용하면 이 중 특정 순위에 해당하는 자동차만 출력할 수 있습니다.
+
+---
+
+#### 3.4.2 정답
+```{r}
+mpg <- as.data.frame(ggplot2::mpg)          # mpg 데이터 불러오기
+
+mpg %>% filter(manufacturer == "audi") %>%  # audi 추출
+  arrange(desc(hwy)) %>%                    # hwy 내림차순 정렬
+  head(5)                                   # 5행까지 출력
+```
+
+---
+
+## 4. 파생변수 추가하기
+
+> **mutate(data, new_variable = ...): data에 ...을 통해 생성한 new_variable을 추가하라**
+
+* mutate를 통해 새로운 변수를 추가해봅니다
+
+![](img/06_04.png)
+
+
+---
+
+### 4.1 파생변수 하나 추가하기
+
+```{r eval=FALSE}
+mydata %>%
+  mutate(total = DailyRate * DistanceFromHome) %>%  # 총합 변수 추가
+  head                                          # 일부 추출
+```
+
+### 4.2 여러 파생변수 한 번에 추가하기
+```{r eval=FALSE}
+mydata %>%
+  mutate(total = DailyRate * DistanceFromHome,  # 총합 변수 추가
+         mean = YearsAtCompany/YearsInCurrentRole) %>%   # 총평균 변수 추가
+  head                                              # 일부 추출
+```
+
+
+
+
+
