@@ -1,0 +1,58 @@
+---
+title: "R programming_lecture 8"
+subtitle: "⚔<br/>with xaringan"
+author: "kwangtae kim"
+institute: "Yonsei IOPsy"
+date: "2022/02/01 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(base_color = "#43418A",
+                  base_font_size = "14px",
+                  text_font_size = "1.2rem",
+                  header_h1_font_size = "2.2rem",
+                  header_h2_font_size = "2rem",
+                  header_h3_font_size = "1.7rem",
+                  header_background_auto = FALSE,
+                  code_font_size = "1rem",
+
+
+)
+
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringanExtra::use_clipboard()
+```
+
+```{r include=FALSE}
+knitr::opts_chunk$set(fig.align = "center", message=F, warning=F, fig.height = 3, cache=T, dpi = 300)
+```
+
+
+# 08. 나만의 함수 만들기
+
+## 0. 학습 안내  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
