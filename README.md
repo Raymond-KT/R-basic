@@ -23,6 +23,7 @@
 
 - 각 강의는 Rmarkdown으로 작성되었으며, 수업 종료 이후에도 홀로 학습하실 수 있습니다.  
 - 수업 이후에도 질문하실 내용이 있으시면, 언제든지 저에게 메일 주세요! <chriskt@yonsei.ac.kr>
+- 본 자료는 [<나성호의 R 데이터 분석 입문>](http://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode=9791191905038&orderClick=LAG&Kc=)과 [<Do it! 쉽게 배우는 R 데이터 분석>](http://www.kyobobook.co.kr/product/detailViewKor.laf?mallGb=KOR&ejkGb=KOR&barcode=9791187370949) 을 기반으로 작성되었습니다.
   
 ## 3. 학습을 이어갈 온라인 강좌 공유 
       
