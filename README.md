@@ -10,15 +10,15 @@
 
 |No|구분|내용|바로가기|
 |:--:|:----:|:---------|:---:|
-|1|**R Data 분석 환경 구축**|R, Rstudio 설치|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/01%20R%20program%20Basic_setting.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/01-R-program-Basic_setting.html)|
-|2|**R 언어 기초(1)**|Data Structure와 Data Type, Function, Package 이해|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/02-R-program-Basic_data%20structure.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/02-R-program-Basic_data-structure.html)|
-|3|**R로 문서 작성하기**|Rmarkdown/xaringan 활용법|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/03-R-program-markdown.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/03-R-program-markdown.html)|
-|4|**R 데이터 입출력**|데이터 불러오기|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/04-R-program-DataIO.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/04-R-program-DataIO.html)|
-|5|**R 언어 기초(2)**|데이터 전처리(결측치, 이상치)|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/05-R-program-data_preprocessing.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/05-R-program-data_preprocessing.html)|
-|6|**R 데이터 가공**|데이터 filter, select, mutate 등|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/06-R-program-Basic_NA.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/06-R-program-Basic_NA.html)|
-|7|**R 조건문, 반복문**|데이터 입출력|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/07-R-program-Loop%2C%20Conditional.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/07-R-program-Loop%2C-Conditional.html)|
-|8|**R 나만의 함수 만들기**|function 정의하고 사용하기|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/08-R-program-Function.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/08-R-program-Function.html)|
-|9|**R 기초통계**|Descriptive Statistics, regression, t-test, ANOVA|[스크립트1](https://github.com/Raymond-KT/R-basic/blob/main/09-R-program-correlation%2C%20regression.Rmd),[자료1](https://github.com/Raymond-KT/R-basic/blob/main/09-R-program-correlation%2C-regression.html)|
+|1|**R Data 분석 환경 구축**|R, Rstudio 설치|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/Script/01%20R%20program%20Basic_setting.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/01-R-program-Basic_setting.html)|
+|2|**R 언어 기초(1)**|Data Structure와 Data Type, Function, Package 이해|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/Script/02-R-program-Basic_data%20structure.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/02-R-program-Basic_data-structure.html)|
+|3|**R로 문서 작성하기**|Rmarkdown/xaringan 활용법|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/Script/03-R-program-markdown.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/03-R-program-markdown.html)|
+|4|**R 데이터 입출력**|데이터 불러오기|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/Script/04-R-program-DataIO.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/04-R-program-DataIO.html)|
+|5|**R 언어 기초(2)**|데이터 전처리(결측치, 이상치)|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/Script/05-R-program-data_preprocessing.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/05-R-program-data_preprocessing.html)|
+|6|**R 데이터 가공**|데이터 filter, select, mutate 등|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/Script/06-R-program-Basic_NA.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/06-R-program-Basic_NA.html)|
+|7|**R 조건문, 반복문**|데이터 입출력|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/Script/07-R-program-Loop%2C%20Conditional.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/07-R-program-Loop%2C-Conditional.html)|
+|8|**R 나만의 함수 만들기**|function 정의하고 사용하기|[스크립트](https://github.com/Raymond-KT/R-basic/blob/main/Script/08-R-program-Function.Rmd),[자료](https://github.com/Raymond-KT/R-basic/blob/main/docs/08-R-program-Function.html)|
+|9|**R 기초통계**|Descriptive Statistics, regression, t-test, ANOVA|[스크립트1](https://github.com/Raymond-KT/R-basic/blob/main/09-R-program-correlation%2C%20regression.Rmd),[자료1](https://github.com/Raymond-KT/R-basic/blob/main/docs/09-R-program-correlation%2C-regression.html)[스크립트2](https://github.com/Raymond-KT/R-basic/blob/main/Script/10-R-program-ANOVA%2C%20ttest.Rmd)[자료2](https://github.com/Raymond-KT/R-basic/blob/main/docs/10-R-program-ANOVA%2C-ttest.html)|
 |10|**R 지속 학습 방법**|Github, Kaggle 활용/통계학자 샘플 활용/커뮤니티 가입 등|-|
 
 - 각 강의는 Rmarkdown으로 작성되었으며, 수업 종료 이후에도 홀로 학습하실 수 있습니다.  
