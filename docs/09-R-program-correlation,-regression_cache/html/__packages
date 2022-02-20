@@ -1,3 +1,4 @@
+xaringanthemer
 tidyverse
 ggplot2
 tibble
@@ -7,7 +8,6 @@ purrr
 dplyr
 stringr
 forcats
-xaringanthemer
 tidymodels
 broom
 scales
@@ -22,3 +22,17 @@ workflows
 workflowsets
 yardstick
 corrplot
+processR
+stargazer
+moonBook
+corrr
+twidlr
+carData
+car
+correlation
+zoo
+xts
+PerformanceAnalytics
+boot
+MASS
+QuantPsyc

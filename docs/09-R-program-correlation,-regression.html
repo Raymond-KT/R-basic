@@ -9,6 +9,8 @@
     <link href="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
     <script src="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
     <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <script src="libs/kePrint-0.0.1/kePrint.js"></script>
+    <link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
   <body>
@@ -19,7 +21,7 @@ class: center, middle, inverse, title-slide
 ## ⚔<br/>with xaringan
 ### kwangtae kim
 ### Yonsei IOPsy
-### 2022/02/01 (updated: 2022-02-13)
+### 2022/02/01 (updated: 2022-02-20)
 
 ---
 
@@ -30,7 +32,7 @@ class: center, middle, inverse, title-slide
 
 
 
-# 09. 기초 통계 
+# 09. 기초 통계(1) correlation, regression
 
 ## 0. 학습 안내 
   
@@ -52,42 +54,170 @@ class: center, middle, inverse, title-slide
   
   [※ tidy data 개념](https://partrita.github.io/posts/tidy-data/)
   
-  - 향후 각종 분석과 머신러닝 등을 위해 tidymodels 패키지를 설치해두시면 조금 더 편하게 분석/머신러닝을 진행하실 수 있습니다. 
+  - 향후 각종 분석과 머신러닝 등을 위해 tidymodels 패키지를 설치해두시면 조금 더 편하게 분석/머신러닝을 진행하실 수 있습니다  
 
 ---
 
 ## 1. 패키지 로딩  
 
-#### 먼저, 필요한 패키지를 pacman 패키지 p_load 함수를 활용하여 한번에 불러오겠습니다. 
+#### 먼저, 필요한 패키지를 pacman 패키지 p_load 함수를 활용하여 한번에 불러오겠습니다
 
 
 
 ```r
-pacman::p_load('tidyverse','tidymodels','twidlr','corrplot', 'processR', 'stargazer') 
+#devtools::install_github("drsimonj/twidlr")
+pacman::p_load('tidyverse','tidymodels','twidlr','corrplot','car',
+               'processR', 'stargazer', 'moonBook', 'corrr') 
 ```
 
-  
+  - 계속해서 패키지들이 개발되고 배포되고 있기 때문에, 더 쉽고 빠르게 분석에 활용할 수 있는 패캐지들이 나도 모르는 사이에 널리 활용되고 있을 수 있습니다  
+    
+  - R 관련 커뮤니티에 가입하셔서 계속 동향을 파악하셔도 좋고,  
+  [R-bloggers](https://www.r-bloggers.com/)와 같은 사이트에 뉴스레터를 신청하셔도 좋습니다   
+    
+  - 원하는 분석 방법이 있을 때는 구글 검색을 통해 최근 분석 트렌드를 파악해보시는 것을 권해드립니다
   
 ---
 ## 2. 기초 통계량 확인
 
-  - 지난 시간에 이어, R 내장 데이터인 mtcars 데이터와 아래의 네 가지 패키지를 활용하여 진행하고자 합니다  
+### 2.1 데이터 불러오기 
+  - 기초 통계량 확인을 위해 IBM의 Attrition Data를 다시 사용해보겠습니다. 
+
+```r
+#mydata &lt;-  read.table("clipboard-16384", sep="\t", fill=T, header = T) 
+#mydata %&gt;% saveRDS("mydata.RDS")
+mydata &lt;- readRDS("mydata.RDS")
+```
+
+### 2.2 조건별/성별 척도 평균과 표준편차 
+  - 논문 양식에 맞추기 위한 것이 아닌, 분석을 위해 값을 확인할 때는 아래와 같이 코딩합니다.
+
+```r
+mydata %&gt;%
+  group_by(Attrition, Gender) %&gt;%
+  summarise(
+    total = n(),
+    DailyRate_mean = mean(DailyRate),
+    DailyRate_sd = sd(DailyRate),
+    MonthlyIncome_mean = mean(MonthlyIncome),
+    MonthlyIncome_sd = sd(MonthlyIncome),
+    JobSatisfaction_mean = mean(JobSatisfaction),
+    JobSatisfaction_sd = sd(JobSatisfaction)
+  ) %&gt;%
+  knitr::kable(format = "html", digits = 2)%&gt;%
+  kableExtra::scroll_box(width = "100%", height = "200px")
+```
+
+---
+
+### 2.2 조건별/성별 척도 평균과 표준편차 
+  
+&lt;div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:200px; overflow-x: scroll; width:100%; "&gt;&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Attrition &lt;/th&gt;
+   &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Gender &lt;/th&gt;
+   &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; total &lt;/th&gt;
+   &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; DailyRate_mean &lt;/th&gt;
+   &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; DailyRate_sd &lt;/th&gt;
+   &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; MonthlyIncome_mean &lt;/th&gt;
+   &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; MonthlyIncome_sd &lt;/th&gt;
+   &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; JobSatisfaction_mean &lt;/th&gt;
+   &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; JobSatisfaction_sd &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; No &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Female &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 501 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 821.61 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 404.70 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7019.43 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4760.46 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.73 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.10 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; No &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Male &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 732 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 806.27 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 402.34 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6704.96 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4856.44 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.81 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.09 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Yes &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Female &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 87 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 731.48 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 422.28 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4769.74 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3791.77 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.43 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.05 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Yes &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Male &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 150 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 761.31 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 390.62 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4797.16 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3562.25 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.49 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.16 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;&lt;/div&gt;
 
 
 
+---
+### 2.2 조건별/성별 척도 평균과 표준편차  
+  - 논문 양식에 맞춰 데이터를 넣기 위해 기초 통계량을 확인할 때는 **stargazer, moonBook** 등의 패키지를 활용합니다. 
+
+
+```r
+mydata %&gt;% 
+  dplyr::select(Age, Attrition,JobSatisfaction,JobInvolvement,YearsAtCompany) %&gt;% 
+  mytable()
+```
+
+               Descriptive Statistics              
+&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt; 
+                Mean ± SD or %    N   Missing (%)
+&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt; 
+   Age                36.9 ± 9.1  1470  0  ( 0.0%)
+  Attrition                       1470  0  ( 0.0%)
+    - No           1233  (83.9%)                  
+    - Yes           237  (16.1%)                  
+  JobSatisfaction                 1470  0  ( 0.0%)
+    - 1             289  (19.7%)                  
+    - 2             280  (19.0%)                  
+    - 3             442  (30.1%)                  
+    - 4             459  (31.2%)                  
+  JobInvolvement                  1470  0  ( 0.0%)
+    - 1               83  (5.6%)                  
+    - 2             375  (25.5%)                  
+    - 3             868  (59.0%)                  
+    - 4              144  (9.8%)                  
+   YearsAtCompany      7.0 ± 6.1  1470  0  ( 0.0%)
+&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt;&lt;U+2014&gt; 
 
 ---
 ## 3. 상관분석 
 
 ### 3.1 상관분석 기본 함수
 
-* 저는 주로 시각화해서 상관 관계를 확인하고 데이터 분석을 진행합니다  
-* 기술통계가 필요 없는 분들은 **corrplot 패키지로 시각화 하기**를 곧바로 참고해주셔도 됩니다.
+* 지난 시간에 이어, R 내장 데이터인 mtcars 데이터와 아래의 네 가지 패키지를 활용하여 진행하고자 합니다  
   
-&gt; **cor(데이터): 데이터의 변수 간 상관계수를 구하라**
+* 저는 주로 시각화해서 상관 관계를 확인하고 데이터 분석을 진행합니다  
   
 * 앞서 공유 드렸듯이, mtcars는 총 11개 변수로 구성되어 있습니다.  
-  
   
   ```
   [, 1]	mpg	Miles/(US) gallon
@@ -102,37 +232,34 @@ pacman::p_load('tidyverse','tidymodels','twidlr','corrplot', 'processR', 'starga
   [,10]	gear	Number of forward gears
   [,11]	carb	Number of carburetors
   ```
-  
 ---
 
 ### 3.2 상관분석 실시
-
-#### 기본적인 변수간 상관 분석은 **cor()** 함수를 통해 바로 진행하실 수 있습니다.  
   
+&gt; **cor(데이터): 데이터의 변수 간 상관계수를 구하라**
+  
+#### 기본적인 변수간 상관 분석은 **cor()** 함수를 통해 바로 진행하실 수 있습니다
+  
+#### **corrr, corrplot 패키지** 등 상관계수를 구하고 표현하는 패키지도 여러 종류가 있습니다
+
 
 ```r
-# mtcars의 11개 변수 전부를 상관분석한 뒤, 그 결과를 tidy하게 확인해보겠습니다. 
-mtcars%&gt;%cor%&gt;%tidy
+# mtcars의 11개 변수 전부를 상관분석한 뒤, 그 결과를 확인해보겠습니다. 
+mtcars %&gt;% cor() 
+
+mtcars %&gt;% correlate() 
+
+mtcars %&gt;% correlate() %&gt;% shave()
+
+mtcars %&gt;% correlate() %&gt;%  fashion()
+
+mtcars %&gt;% correlate() %&gt;%  rplot()
+
+mtcars %&gt;% correlate() %&gt;%  network_plot(min_cor = .5)
 ```
 
-```
-## # A tibble: 11 x 1
-##    x[,"mpg"] [,"cyl"] [,"disp"] [,"hp"] [,"drat"] [,"wt"] [,"qsec"] [,"vs"]
-##        &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
-##  1     1       -0.852    -0.848  -0.776    0.681   -0.868    0.419    0.664
-##  2    -0.852    1         0.902   0.832   -0.700    0.782   -0.591   -0.811
-##  3    -0.848    0.902     1       0.791   -0.710    0.888   -0.434   -0.710
-##  4    -0.776    0.832     0.791   1       -0.449    0.659   -0.708   -0.723
-##  5     0.681   -0.700    -0.710  -0.449    1       -0.712    0.0912   0.440
-##  6    -0.868    0.782     0.888   0.659   -0.712    1       -0.175   -0.555
-##  7     0.419   -0.591    -0.434  -0.708    0.0912  -0.175    1        0.745
-##  8     0.664   -0.811    -0.710  -0.723    0.440   -0.555    0.745    1    
-##  9     0.600   -0.523    -0.591  -0.243    0.713   -0.692   -0.230    0.168
-## 10     0.480   -0.493    -0.556  -0.126    0.700   -0.583   -0.213    0.206
-## 11    -0.551    0.527     0.395   0.750   -0.0908   0.428   -0.656   -0.570
-```
-
-* mtcars 라는 데이터가 cor 라는 상관분석 함수로 들어가서 tidy라는 결과보기 함수로 들어가서 위와 같이 정리되어 보여집니다. 결과를 보면, 상관계수가 꽤 높은 것들도 많이 보입니다.  
+* mtcars 라는 데이터가 cor 라는 상관분석 함수로 들어가서 정리되어 보여집니다.   
+결과를 보면, 상관계수가 꽤 높은 것들도 많이 보입니다.  
   
 * 상관분석 method도 pearson, spearman, kendall 중 선택하실 수 있으며, 이 중 default는 pearson으로 되어 있습니다.   
   
@@ -149,12 +276,13 @@ mtcars%&gt;%cor%&gt;%tidy
   
 &gt; **cor.mtest(메트릭스 데이터,'방법','신뢰수준' ) : '신뢰수준'에서, '방법'을 활용하여   매트릭스 데이터 모든 변수의 상관계수를 구하라**
 
-* 두 개의 변수에 대해서만 상관계수 검정을 하실 때는 cor.test 함수를 사용하시면 되고,  
+* 두 개의 변수에 대해서 상관계수 검정을 하실 때는 cor.test 함수를 사용하시면 되고,  
 두 개 이상의 변수에 대해 상관계수 검정을 하실 때는 cor.mtest 함수를 사용하시면 됩니다. 
 
 * 우선, 상관계수가 높게 나온 cyl과 disp의 상관계수 검정을 cor.test 함수를 활용하여  진행해보겠습니다. 
 
 ---
+  
 ### 3.3 상관분석 통계적 유의성 파악 
 
 
@@ -180,7 +308,7 @@ cor.test(mtcars$cyl,mtcars$disp, method = 'pearson')
 * 검정 결과, p-value가 0.05보다 훨씬 작은 값이 나왔기에  
 해당 상관 계수는 통계적으로 유의하다고 볼 수 있습니다.  
 
-* "통계적으로 유의하다"는 표현을 앞으로도 자주 사용하게 될텐데, 분석을 하다보니 가장 중요한 것이 통계적인 지식인 것 같습니다. p-value에 대해서는 아래 강의 추천드립니다.  
+* "통계적으로 유의하다"는 표현을 앞으로도 자주 사용하게 될텐데, 분석은 한줄로 쉽게 할 수 있지만, 결국 중요한 것은 통계적인 지식인 것 같습니다. p-value에 대해서는 아래 강의 추천드립니다.  
   
   [유튜브 강의 : 1-3 왜 유의할까? - 도대체 p-값(p-value)는 무엇인가?](https://www.youtube.com./watch?v=5Xke4ao1g9E)
   
@@ -188,12 +316,14 @@ cor.test(mtcars$cyl,mtcars$disp, method = 'pearson')
 
 ### 3.3 상관분석 통계적 유의성 파악 
 
-* cor.mtest 함수를 사용하면 해당 데이터에 존재하는 모든 변수간 상관계수 검정을 진행할 수 있는데요, 99mtcars에 있는 모든 변수에 대해 상관계수 검정을 진행해보겠습니다.  
+* cor.mtest 함수를 사용하면 해당 데이터에 존재하는 모든 변수간 상관계수 검정을 진행할 수 있습니다  
+  
+* 99mtcars에 있는 모든 변수에 대해 상관계수 검정을 진행해보겠습니다.  
   
 * cor.mtest 함수를 실행하면, p값이 저장되어 있는 p, 신뢰구간의 하단을 나타내는 lowCI,  
 신뢰구간의 상단을 나타내는 uppCI 총 3개의 변수로 결과 값이 나옵니다.  
   
-* 저는 p값만 사용하며, 변수가 많은 경우, 아래와 같이 출력해서 통계적 유의미성을 확인하는 것은 한계가 있습니다. 
+* 변수가 많은 경우, 아래와 같이 출력해서 통계적 유의미성을 확인하는 것은 한계가 있습니다. 
 
 
 ```r
@@ -295,11 +425,13 @@ mtcars%&gt;%cor.mtest(method='pearson')
 
 ---
     
-## 4. 상관분석 시각화
+## 4. 상관분석 통계적 유의성 쉽게 확인
 
 ### 4.1 유의값 확인
 
-
+* 먼저 mtcars 변수들에 대해 상관계수 검정을 진행합니다. (pearson 상관계수 양측검정)  
+  
+* str함수를 통해 p.value 의 구조를 살펴보면 p.value는 p값, lowCI값, uppCI 값으로 구성되어 있으며, 저희는 상관계수인 p값만 필요하기에 리스트 첫번째 p.value[[1]] = p값만 뽑아서 사용합니다.  
            
 
 ```r
@@ -326,14 +458,11 @@ str(p.value)
 ##   .. ..$ : chr [1:11] "mpg" "cyl" "disp" "hp" ...
 ```
  
-* 먼저 mtcars 변수들에 대해 상관계수 검정을 진행합니다. (pearson 상관계수 양측검정)  
-  
-* str함수를 통해 p.value 의 구조를 살펴보면 p.value는 p값, lowCI값, uppCI 값으로 구성되어 있으며, 저희는 상관계수인 p값만 필요하기에 리스트 첫번째 p.value[[1]] = p값만 뽑아서 사용합니다.  
-  
-  
+ 
 ---
-### 4.2 그림으로 확인 
-
+### 4.2 시각화하여 확인 
+#### 상관분석이 주요 분석방법이 아닌 경우, 변수간 상관만 시각화하여 확인하고 넘어가기도 합니다 
+  
 
 ```r
 mtcars %&gt;% cor %&gt;% 
@@ -355,23 +484,397 @@ mtcars %&gt;% cor %&gt;%
 * 이 외에도 corrplot에는 다양한 기능들이 있으며, 더 자세한 내용은 아래 링크 참조 부탁드립니다.  
   [Rpubs corrplot 소개 페이지](https://rpubs.com/cardiomoon/27134)  
   
+
+
 ---
-### 4.2 그림으로 확인 
-
-
-* Rstudo에서 그림을 확인하실 때는 ```dev.new()``` 함수로 새 창을 열어주고, 아래의 내용을 실행하여 그림을 그려줍니다. 
+### 4.3 사용자 함수로 확인  
+#### 앞서 배운 사용자 함수를 활용해서 나만 활용할 수 있는 함수를 만들 수도 있습니다. 
 
 
 ```r
-# dev.new()  실습할 때는 # 제거후 확인 
-mtcars %&gt;% na.omit%&gt;%cor %&gt;% 
-  corrplot.mixed(p.mat=p.value[[1]], sig.level=.05, lower = 'number', 
-                 upper='pie', tl.cex=.6, tl.col='black', order='hclust')
+# ++++++++++++++++++++++++++++
+# flattenCorrMatrix
+# ++++++++++++++++++++++++++++
+# cormat : matrix of the correlation coefficients
+# pmat : matrix of the correlation p-values
+flattenCorrMatrix &lt;- function(cormat, pmat) {
+  ut &lt;- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor  =(cormat)[ut],
+    p = pmat[ut]
+    )
+}
+
+flattenCorrMatrix(mtcars %&gt;% cor, p.value[[1]])
 ```
 
-&lt;img src="09-R-program-correlation,-regression_files/figure-html/corrplot with p.value-1.png" style="display: block; margin: auto;" /&gt;
+---
+### 4.4 패키지 활용
+
+
+```r
+pacman::p_load(correlation)
+
+mtcars %&gt;% 
+  correlation::correlation(include_factors = T, method="pearson") %&gt;% 
+  summary(redundant=F)
+```
+
+```
+## # Correlation Matrix (pearson-method)
+## 
+## Parameter |    carb |    gear |       am |       vs |     qsec |       wt |     drat |       hp |     disp |      cyl
+## ---------------------------------------------------------------------------------------------------------------------
+## mpg       |  -0.55* |    0.48 |   0.60** |   0.66** |     0.42 | -0.87*** |  0.68*** | -0.78*** | -0.85*** | -0.85***
+## cyl       |   0.53* |   -0.49 |   -0.52* | -0.81*** |   -0.59* |  0.78*** | -0.70*** |  0.83*** |  0.90*** |         
+## disp      |    0.39 |  -0.56* |   -0.59* | -0.71*** |    -0.43 |  0.89*** | -0.71*** |  0.79*** |          |         
+## hp        | 0.75*** |   -0.13 |    -0.24 | -0.72*** | -0.71*** |   0.66** |    -0.45 |          |          |         
+## drat      |   -0.09 | 0.70*** |  0.71*** |     0.44 |     0.09 | -0.71*** |          |          |          |         
+## wt        |    0.43 |  -0.58* | -0.69*** |   -0.55* |    -0.17 |          |          |          |          |         
+## qsec      | -0.66** |   -0.21 |    -0.23 |  0.74*** |          |          |          |          |          |         
+## vs        |  -0.57* |    0.21 |     0.17 |          |          |          |          |          |          |         
+## am        |    0.06 | 0.79*** |          |          |          |          |          |          |          |         
+## gear      |    0.27 |         |          |          |          |          |          |          |          |         
+## 
+## p-value adjustment method: Holm (1979)
+```
+
+---
+## 5. 회귀분석-기본 
+### 5.1 회귀분석 개요
   
-* 위와 같이 상관분석 결과를 한눈에 보실 수 있으며, 파란색이 진해질수록 정적 상관이, 붉은색이 진해질수록 부적 상관이 크고, pie를 차지하는 면적이 클수록 상관계수가 큼을 알 수 있습니다  
+* 기본적인 회귀분석은 단 한줄로 실행 가능하지만,  
+**단순 선형회귀, 로지스틱 (다중)회귀, 위계적 (다중)회귀, Cox 비례 회귀** 등  
+분석하고자 하는 가설에 따라, 데이터 형태에 따라 매우 다양한 방법이 존재합니다. 
+
+* 회귀분석-기본에서는 **단순 회귀분석**과 **다중 회귀분석**에 대해 간단하게 공유드리겠습니다.  
+  
+* 회귀분석을 하기 전 기본 가정을 지키며 분석을 하고, 회귀분석을 한 뒤 그 결과를 바르게 해석하는 것은 여러번 실행해봐도쉽지 않은 것 같습니다.  
+  
+* 상관분석에 이어, 회귀분석에서도 mtcars 데이터를 활용하겠습니다.  
+  
+* 기본적인 회귀분석은 별도의 패키지를 설치하지 않아도 하실 수 있으나,  
+조금 더 편하게 진행하실 수 있도록 필요한 패키지 몇 가지를 더 설치하시기를 추천드립니다.   
+  
+* 회귀분석 학습에 앞서, 아래의 유튜브 강의와 자료를 보시고 회귀분석 기본 개념에 대해  익히시면 좋을 것 같습니다.  
+  
+  [유튜브 강의 : 회귀분석(OLS) ](https://www.youtube.com./watch?v=dcMvKmkNn8w&amp;list=PLalb9l0_6WApDZGksoHt474fy1U35Bv-T)
+
+  [마인드스케일 : R통계 기초](https://mindscale.kr/course/basic-stat-r)
+
+---
+### 5.2 단순 선형 회귀분석    
+#### 오늘 활용할 패키지를 로드 해줍니다.
+
+
+
+```r
+# 회귀분석에 필요한 라이브러리를 로드해줍니다.
+pacman::p_load('tidyverse','tidymodels','twidlr','PerformanceAnalytics', 'car', 'QuantPsyc') 
+```
+
+#### 독립변수 / 종속변수 설정하기  
+  
+* 단순 회귀 분석은 변수와 변수 간 영향관계를 파악하기 위해 시행하므로,  
+영향을 주는 변수(독립변수)와, 영향을 받는 변수(종속변수)를 정해주시면 됩니다.  
+  
+  
+  &gt; * 독립 : 종속 변수에 영향을 주는 변수  
+  &gt; * 종속 : 독립 변수에 의해 영향을 받는 변수  
+  &gt;   (예) 조직의 인원수(독립)이 조직몰입(종속)에 영향을 미치는가? 
+
+---
+### 5.2 단순 선형 회귀분석    
+#### mtcars에 포함된 데이터는 다음과 같습니다. 
+  ```
+  [, 1]          mpg     Miles/(US) gallon
+  [, 2]          cyl        Number of cylinders
+  [, 3]          disp      Displacement (cu.in.)
+  [, 4]          hp       Gross horsepower
+  [, 5]          drat      Rear axle ratio
+  [, 6]          wt        Weight (1000 lbs)
+  [, 7]          qsec     1/4 mile time
+  [, 8]          vs        Engine (0 = V-shaped, 1 = straight)
+  [, 9]          am       Transmission (0 = automatic, 1 = manual)
+  [,10]          gear     Number of forward gears
+  [,11]          carb     Number of carburetors
+  ```  
+
+---
+### 5.2 단순 선형 회귀분석    
+#### mtcars 데이터 중, 차의 무게 wt 변수가 차의 연비 mpg에 영향을 미치는지 확인해보겠습니다.  
+  
+  ```  
+  * 독립 : 차의 무게 wt  
+  * 종속 : 차의 연비 mpg
+  ```  
+
+#### 단순 회귀분석을 하고 결과를 확인합니다
+  
+&gt; **lm()%&gt;%tidy : 회귀분석을 하고, 결과를 tidy하게 보여주세요**
+  
+
+```r
+ mtcars %&gt;% lm(mpg ~ wt, .) %&gt;% tidy()
+```
+  
+    
+&gt; mtcars %&gt;% lm(mpg ~ wt, .) %&gt;% tidy
+  
+  
+* mtcars의 데이터를 회귀분석 lm 수식에 넣고, (종속:mpg ~ 독립:wt) 분석을 한 뒤, 결과를 tidy하게 나타내라 는 뜻입니다. 
+  
+
+* 위의 결과를 보시면, p-value가 0.05 미만으로 나와서 통계적으로 유의미하며, 회귀 계수는 -5.34가 나왔습니다.  
+  
+* 이를 단순하게 해석하면 무게가 1 증가 할 때, 연비는 5.34 감소한다고 보시면 됩니다.  
+  
+---
+### 5.2 단순 선형 회귀분석
+#### 회귀분석 모델의 성능을 파악합니다. 
+
+  
+&gt; **lm()%&gt;%glance : 회귀분석 모델의 성능을 정리해서 보여주세요**
+  
+* 분석 모델의 성능을 파악할 때는 glance 함수를 활용합니다.  
+  
+* r.squared, F-statistic 지표를 통해, 수립한 회귀모형이 데이터를 잘 설명하는지 확인할 수 있습니다.  
+    
+
+```r
+mtcars %&gt;% lm(mpg ~ wt, .) %&gt;% glance
+```
+  
+* adj.rsquared 값이 높게 나왔고, p.value가 0.05 미만으로 통계적으로 유의하기에  
+이제 데이터가 회귀분석의 기본 가정을 만족하는지 살펴봐야 합니다.  
+  
+  ```
+  1. adj.r.squared 는 수정된 결정계수/설명력을 말하며, 0.745로 비교적 높게 나왔습니다.  
+  이를 단순하게 해석하면, 차의 무게가 차의 연비를 74.5% 설명할 수 있다고 보시면 됩니다.  
+  
+  2. 첫번째 열에 r.squared 값이 있고, 두번째 열에 adj.r.squared 값이 있는데,  
+  독립변수의 개수가 증가할 수록 r.squared 값이 커지기에 독립변수가 한개 이상이라면,  
+  ajd.r.squared 값을 확인하시면 됩니다.  
+  
+  3. statistic는 F통계량을 말하며, F통계량의 p.value 역시 0.05보다 작아  
+  통계적으로 유의미함을 알 수 있고, 회귀 모형이 데이터에 잘 맞음을 알 수 있습니다. 
+  ```
+---
+### 5.2 단순 선형 회귀분석
+#### 회귀분석 기본 가정 확인  
+  
+* 회귀분석을 함에 앞서, 반드시 확인해야 하는 기본 가정이 있습니다.  
+* 단순 선형 회귀분석의 경우, **네가지 가정을 확인**해주어야 합니다. 
+* 가정의 의미와 검정 결과를 확인하는 방법에 대해서는  
+다른 chapter에서 '등분산, 정규성 검정' 만 따로 다루면서 함께 진행해보겠습니다.  
+  
+구분|내용|확인방법|함수  
+:--:|:--:|:-------|:------:  
+1|선형성|독립변수-종속변수 산점도 그려보기|plot(x,y)  
+2|등분산성|독립변수-잔차 산점도 그려보기|plot(회귀데이터)    
+3|독립성|잔차에 대한 Durvbin watson 검정|car 패키지 durbinWatsonTest()  
+4|정규성|표준화된 잔차 정규성 검정|shapiro.test()  
+  
+---
+### 5.2 단순 선형 회귀분석
+#### 회귀분석 기본 가정 확인  
+
+
+```r
+# 1. 산점도 그려보기 
+plot(mtcars$wt,mtcars$mpg)
+
+# 2. 등분산성 확인 
+par(mfrow=c(2,2))
+mtcars %&gt;% lm(mpg ~ wt, .) %&gt;% plot
+
+# 3. 독립성 확인 (상한 이상 값 나올 경우, 독립성 확인)
+mtcars %&gt;% lm(mpg ~ wt, .) %&gt;% residuals %&gt;% durbinWatsonTest()
+
+# 4. 정규성 확인 (p-value &gt; 0.05 이면 정규성 가정 가능)
+mtcars %&gt;% lm(mpg ~ wt, .) %&gt;% residuals %&gt;% shapiro.test
+```
+  
+---
+### 5.3 단순 선형 회귀분석
+#### 회귀분석을 그림으로 표현합니다 
+  
+  &gt; **ggplot(옵션): 옵션을 활용해서 그림을 그릴거에요  + geom_point(옵션):옵션을 활용해서 점을 그리고요 + geom_smooth(옵션): 옵션을 활용해서 선을 그려주세요 **
+  
+ * 두 변수의 회귀분석 결과는 그래프로 보시면 더 명확하게 보실 수 있습니다.  
+  
+
+```r
+mtcars%&gt;%ggplot(aes(x=wt,y=mpg))+geom_point()+
+  geom_smooth(method = 'loess', level=.95)
+```
+
+&lt;img src="09-R-program-correlation,-regression_files/figure-html/ggplot regression-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+### 5.3 단순 선형 회귀분석
+#### 회귀분석을 그림으로 표현합니다 
+    
+  &gt;  mtcars%&gt;%ggplot(aes(x=wt,y=mpg))+geom_point()+geom_smooth(method = 'loess', level=.95)
+  
+* **mtcars%&gt;%ggplot(aes(x=wt,y=mpg)):** 데이터를 ggplot 함수에 넣고, x축은 무게wt, y축은 연비 mpg를 넣어라, 
+
+* **geom_point()+geom_smooth(method = 'loess', level=.95):** 이를 점으로 표시하고(geom_point), loess 방식으로 회귀분석 하여 95% 신뢰구간을 포함한 회귀선을 그려라 (geom_smooth)는 뜻입니다.
+  
+---
+## 6. 다중 선형 회귀분석  
+### 6.1 독립변수/종속변수 설정하기  
+  
+* 다중회귀분석은 일반적으로 독립변수를 2개 이상으로 설정하시는 경우를 말합니다. 
+  
+
+```r
+mtcars %&gt;% lm(mpg ~.) %&gt;% tidy
+```
+
+```
+## # A tibble: 11 x 5
+##    term        estimate std.error statistic p.value
+##    &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+##  1 (Intercept)  12.3      18.7        0.657  0.518 
+##  2 cyl          -0.111     1.05      -0.107  0.916 
+##  3 disp          0.0133    0.0179     0.747  0.463 
+##  4 hp           -0.0215    0.0218    -0.987  0.335 
+##  5 drat          0.787     1.64       0.481  0.635 
+##  6 wt           -3.72      1.89      -1.96   0.0633
+##  7 qsec          0.821     0.731      1.12   0.274 
+##  8 vs            0.318     2.10       0.151  0.881 
+##  9 am            2.52      2.06       1.23   0.234 
+## 10 gear          0.655     1.49       0.439  0.665 
+## 11 carb         -0.199     0.829     -0.241  0.812
+```
+
+* 종속변수 외, 데이터의 모든 변수를 독립변수로 넣고 돌리고자 하실 때는 위와 같이 (종속~.) 써주시면 되고,  
+  
+* 몇 가지 변수만 독립변수로 정하시려면, (종속 ~ 독립1+독립2+독립3+독립4) 와 같이 독립변수들을 + 기호로 연결해주시면 됩니다. 
+---
+### 6.2 다중회귀분석 시행하기 
+
+* mtcars 데이터 중, 차의 무게wt 와 기통 cyl, 엔진타입vs, 마력vs 가 연비에 어떤 영향을 주는지 확인해보겠습니다.  
+  
+
+```r
+mtcars %&gt;% lm(mpg ~wt+cyl+vs+hp) %&gt;% tidy
+```
+
+```
+## # A tibble: 5 x 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)  38.5       3.34     11.5    6.14e-12
+## 2 wt           -3.18      0.774    -4.11   3.26e- 4
+## 3 cyl          -0.905     0.679    -1.33   1.94e- 1
+## 4 vs            0.155     1.62      0.0957 9.24e- 1
+## 5 hp           -0.0179    0.0122   -1.46   1.56e- 1
+```
+
+```r
+mtcars %&gt;% lm(mpg ~wt+cyl+vs+hp) %&gt;% glance
+```
+
+```
+## # A tibble: 1 x 12
+##   r.squared adj.r.squared sigma statistic  p.value    df logLik   AIC   BIC
+##       &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     0.843         0.820  2.56      36.3 1.70e-10     4  -72.7  157.  166.
+## # ... with 3 more variables: deviance &lt;dbl&gt;, df.residual &lt;int&gt;, nobs &lt;int&gt;
+```
+
+* 다중 회귀분석 결과는 모두 유의하게 영향을 미치는 것으로 나왔고, adj.r.squared 값도 0.82로 높게 나왔습니다.  
+  
+* 선형 단순 회귀와 마찬가지로 다중 회귀분석에서도 고려해줘야 하는 사항이 있습니다.  
+  
+---
+### 6.3 다중회귀분석 결과 확인
+
+#### 다중회귀분석 
+* 다중 회귀분석을 하실 경우, **다중공선성**과 **변수 측정 단위**를 확인해주셔야 합니다.  
+
+구분|내용|확인 방법  
+:--:|:-----|:-----------------  
+다중공선성|변수간 상관관계가 높지 않은지 확인|QuantPsyc 패키지 vif 함수  
+표준화|변수의 측정단위 같은지 확인|car 패키지 lm.beta 함수  
+   
+   
+#### 분산팽창인자(VIF) 확인 
+
+   &gt; mtcars %&gt;% lm(mpg ~wt+cyl+vs+hp) %&gt;% vif %&gt;% tidy
+
+* mtcars 데이터를 종속~독립 관계에 따라 회귀분석을 진행하고, 변수들간 다중공선성을 확인하고 결과를 tidy하게 나타내라  
+
+
+```r
+mtcars %&gt;% lm(mpg ~wt+cyl+vs+hp) %&gt;% vif %&gt;% tidy
+```
+  
+* vif 값은 '분산 팽창 계수'를 의미하며 1에서 10 미만이면 다중 공선성이 없다고 보기에, wt,cyl,vs,hp 모두 활용하실 수 있습니다. *(더미 변수 활용 시 3 미만)*  
+  
+---
+### 6.3 다중회귀분석 결과 확인
+#### 표준화된 회귀계수 확인  
+
+  &gt; mtcars %&gt;% lm(mpg ~wt+cyl+vs+hp) %&gt;% lm.beta %&gt;% tidy
+  
+* mtcars 데이터를 종속~독립 관계에 따라 회귀분석을 진행하고 표준화된 회귀계수 값을 tidy하게 나타내라
+  
+* mtcars 데이터는 측정 단위가 모두 다르기 때문에 표준화된 회귀계수를 봐야 합니다. 
+
+
+```r
+mtcars %&gt;% lm(mpg ~wt+cyl+vs+hp) %&gt;% lm.beta %&gt;% tidy
+```
+
+```
+## # A tibble: 4 x 2
+##   names       x
+##   &lt;chr&gt;   &lt;dbl&gt;
+## 1 wt    -0.517 
+## 2 cyl   -0.268 
+## 3 vs     0.0129
+## 4 hp    -0.203
+```
+* 결과를 보면, 무게 wt가 가장 큰 표준화된 회귀 계수를 갖음을 알 수 있습니다.  
+  
+* 이를 단순히 연비에 무게 wt가 가장 큰 영향을 준다고 볼 수도 있지만,  
+사실 표준화된 회귀 계수가 변수의 상대적 중요도를 나타낸다고 단정지어 말할 수 없습니다.  
+  
+* 이에, 최근에는 상대적 중요도를 뜻하는 shapley value regression를 활용하기도 합니다.  관련 내용은 *회귀분석 - 심화* 편에서 다루도록 하겠습니다.  
+  
+  [KOVO V-리그 경기력 요인의 상대적 중요도  탐색](http://www.kdiss.org/journal/download_pdf.php?doi=0.7465/jkdi.2019.30.4.771)  
+  
+  [선형회귀에서 표준화 회귀계수에 대한 소고](https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002198316)  
+---
+  
+### 6.4 변수간 관계 시각화 
+
+&gt;  **chart.correlation(데이터): 데이터의 변수간 상관관계를 시각화해서 보여달라**
+
+* 마지막으로 변수별 분포와 회귀선, 상관관계까지 한번에 확인할 수 있는 방법을 공유 드리겠습니다.  
+
+* **performanceAnalytics 패키지**에 있는 함수를 통해  
+다양한 변수간 관계를 한번에 그림으로 확인하실 수 있습니다. 
+
+&gt; mtcars%&gt;%select_at(vars(mpg,wt,cyl,vs,hp))%&gt;%chart.Correlation(histogram=TRUE, pch=19)
+
+* mtcars 데이터 중 mpg, wt, cyl, vs, hp 만 선택하여 상관관계 차트를 그려주라는 뜻입니다. 
+ 
+
+```r
+mtcars%&gt;%select_at(vars(mpg,wt,cyl,vs,hp))%&gt;%
+  chart.Correlation(histogram=TRUE, pch=20)
+```
+
+---
+### 6.4 변수간 관계 시각화 
+#### 아래와 같이 회귀선과 상관계수/상관계수검정 결과까지 한번에 확인하실 수 있습니다. 
+&lt;img src="09-R-program-correlation,-regression_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
