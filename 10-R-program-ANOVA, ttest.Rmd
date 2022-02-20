@@ -1,0 +1,377 @@
+---
+title: "R programming_lecture 10"
+subtitle: "⚔<br/>with xaringan"
+author: "kwangtae kim"
+institute: "Yonsei IOPsy"
+date: "2022/02/01 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(base_color = "#43418A",
+                  base_font_size = "14px",
+                  text_font_size = "1.2rem",
+                  header_h1_font_size = "2.2rem",
+                  header_h2_font_size = "2rem",
+                  header_h3_font_size = "1.7rem",
+                  header_background_auto = FALSE,
+                  code_font_size = "1rem",
+)
+
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringanExtra::use_clipboard()
+```
+
+```{r include=FALSE}
+knitr::opts_chunk$set(fig.align = "center", message=F, warning=F, fig.height = 3, cache=T, dpi = 300)
+```
+
+# 09. 기초 통계(2) t test, ANOVA
+
+## 0. 학습 안내 
+  
+* 회사에서 데이터 분석 시에도 기본적으로 활용하는 방법 중 하나가 **집단 간 차이 분석**입니다.  
+* *직급, 세대, 남성/여성, 학력, 신입/경력* 등 다양한 관점에서 집단을 나누고, 차이가 있는지 살펴보면서 Insight를 얻어냅니다. 
+* 직급에 따른 차이 (G1,G2,G3,G4)를 확인하거나, 소속 본부 간 차이, 상/하위 집단 간 인식 차이 등을 확인 할 때 주로 사용하며, **두 집단의 차이는 T-test**, **세 집단 이상의 차이는 ANOVA 및 사후검정(multiple comparison)** 을 통해 확인합니다.  
+* 아래와 같이 t test와 ANOVA 에 대해 설명해주는 표가 있어서, 가져와 보았습니다.  
+  ![T test와 ANOVA 검정 (출처: 한국갤럽 연구1본부 블로그)](https://mblogthumb-phinf.pstatic.net/20140922_125/gallupkorea_1411380898830TrxEG_JPEG/1.jpg?type=w2) 
+---
+## 1. t-test
+### 1.1 라이브러리 호출
+#### ANOVA, t-test에 필요한 라이브러리를 불러옵니다 
+  
+```{r include=FALSE}
+pacman::p_load('tidyverse','tidymodels','twidlr','dplyr', 'moonBook')
+```
+
+  
+```{r eval=FALSE}
+pacman::p_load('tidyverse','tidymodels','twidlr','dplyr', 'moonBook')
+```
+ 
+
+---
+### 1.2. 데이터 불러오기/전처리
+
+#### 앞서 공유드렸던 내용을 참고하시어 IBM의 HR Data를 가져와 주세요. 
+
+```{r include=FALSE}  
+#IBM_HR <- read.table(pipe("pbpaste"),sep = '\t',quote = "", header = T)
+#mydata <- read.table('clipboard',sep = '\t',quote = "", header = T)
+
+mydata <- readRDS("mydata.RDS")
+
+```  
+
+#### 데이터를 확인합니다. 
+
+  * 데이터를 잘 가져왔는지 확인해줍니다.  
+  
+```{r eval=FALSE}
+mydata %>% glimpse()
+```
+  
+  * 복사해온 데이터를 glimpse() 함수로 확인해보면, 총 1,470개의 관측치(행)이 있고, 35개의 변수(열)이 있습니다. 
+
+  * 이는 35개 문항에 대한 1,470명의 정보를 의미합니다. 
+
+#### 그리고 RDS포맷 파일로 저장해주세요  
+  - R에서는 rdata나 RDS 포맷을 사용하시면 데이터를 편하게 저장하고 불러올 수 있습니다
+  
+```{r eval=FALSE}  
+mydata <- readRDS('mydata.RDS')
+```
+
+---
+### 1.3 데이터 응답 고유 값 확인하기  
+  
+* 오늘 집단간 차이 검정은 여러 변수 중 학력, 직무만족, 일과 삶의 균형 세 변수만 활용하여 아래의 내용을 확인하고자 합니다.  
+  ```  
+  1. '학력'에 따른 '직무만족'의 차이  
+  2. '학력'에 따른 '일과 삶의 균형'의 차이  
+  ```  
+* 먼저, 해당 변수에 어떤 값들이 입력되어 있는지 unique 함수를 통해 살펴보겠습니다.  
+
+```{r eval=FALSE}
+unique(mydata$Education)
+unique(mydata$JobSatisfaction)
+unique(mydata$WorkLifeBalance)
+```
+
+* kaggle 홈페이지에는 숫자별로 어떤 값을 의미하는지 상세 설명이 나와 있습니다.  
+  
+  
+  **Education**|**JobSatisfaction**|**WorkLifeBalance**  
+  :--|:--|:--  
+  1 'Below College'|1 'Low'|1 'Bad'    
+  2 'College'  |2 'Medium'|2 'Good'  
+  3 'Bachelor'  |3 'High'|3 'Better'  
+  4 'Master'  |4 'Very High'|4 'Best'  
+  5 'Doctor'  |-|-  
+
+---
+### 1.4 결측치 이상치 확인
+  
+* 검정을 시작하기 전에 데이터에 결측치가 없는지 확인합니다. 
+
+```{r results='asis'}
+mydata %>% moonBook::mytable()
+```    
+  
+---
+### 1.4 t test 준비
+  
+####  원하는 데이터만 불러오기
+
+* 두 집단 간 차이를 분석하는 T test 실습을 위해, 우선 *대졸(Bachelor)*과 *전문대졸 미만 (Below College)* 두 집단을 비교해보겠습니다. 
+
+* 대졸과 전문대졸 미만의 학력을 갖고 있는 인원의 직무만족 데이터만 가져오기 위해 아래와 같이 ***select 함수, subset 함수***를 활용했습니다. 
+
+```{r }
+mydata %>% dplyr::select(Education,JobSatisfaction) %>% 
+  subset(Education=="1"|Education=="3") %>% {. ->> Edu_Ba_Be} %>% 
+  glimpse
+
+``` 
+ 
+>  mydata %>% dplyr::select(Education,JobSatisfaction) %>% subset(Education=="1"|Education=="3") %>% {. ->> Edu_Ba_Be} %>% glimpse
+  
+  
+* mydata에서 Education 과 JobSatisfaction 열만 Select 하고, Education 관측치 중 1과 3인 데이터만 mydata 변수에 저장한뒤, 살펴보겠다는 뜻입니다. 
+---
+### 1.5  데이터의 등분산성 확인  
+  
+* 이제, Edu_Ba_Be 데이터를 활용하여 t test를 진행하겠습니다.  
+t test를 실시하기 위해서는 데이터가 **등분산성**과 **정규성**을 만족해야 합니다.  
+  
+* 설문조사 응답 데이터는 대부분 정규성과 등분산성을 만족하지만, 간혹 그렇지 않은 경우도 있습니다.  
+  
+* 등분산성을 만족하지 않는 경우, 아래와 같이 다양한 검정 방법이 준비되어 있으니, 데이터에 맞게 활용하시면 됩니다.  
+  
+* 등분산성은 비교 대상이 되는 모집단이 동일한 분산을 가져야 한다는 가정을 말하며,  
+정규성은 데이터가 정규분포를 따르고 있는지를 말합니다.  
+  
+* 빈도주의 관점에서는 데이터의 관측치가 31개 이상이면 정규성을 따르는 것으로 해석하기 때문에,  
+보유하고 계신 거의 대부분의 데이터가 정규성은 만족할 것입니다.  
+  
+* 따라서 등분산성만 확인하시면 되며, 아래와 같이 ***var.test() 함수***를 통해 두 집단이 등분산성을 만족하는지 확인하실 수 있습니다.  
+  
+---
+### 1.5  데이터의 등분산성 확인  
+
+> var.test(x$JobSatisfaction,y$JobSatisfaction)
+
+```{r eval=FALSE}
+Edu_Ba_Be %>% filter(Education %in% "1") %>% as.data.frame() -> x
+Edu_Ba_Be %>% filter(Education %in% "3") %>% as.data.frame() -> y
+
+#대졸과 전문대졸 미만이 같은 Variance를 갖고 있는지 확인
+var.test(x$JobSatisfaction,y$JobSatisfaction, conf.level = .95)
+```
+
+* *conf.level*은 신뢰구간을 95%로 설정 한다는 뜻 입니다.  
+  
+* 두 집단의 등분산성을 검정한 결과를 보면, p-value 가 0.05 보다 크기 때문에 등분산성을 만족한다고 볼 수 있습니다.  
+  
+* *var.test*는 두 데이터의 분산이 같다 는 영가설을 기준으로 검정을 하는 것입니다. 따라서,  p-value가 0.05보다 크면 영가설이 참이기에 두 집단의 분산이 같다. 즉, 등분산성을 만족한다고 볼 수 있습니다.  
+  
+* p-value=0.9322로 0.05보다 현저하게 크므로, 대졸미만과 대졸의 직무만족 응답 값은 등분산성을 만족합니다. 
+
+---
+
+### 1.6 t test 시행
+  
+####  Data의 수, 데이터가 짝을 이루는지, 등분산성/정규성을 만족하는지에 따라 다양한 옵션이 존재합니다   
+> t.test(관측치~집단 구분 기준, 데이터프레임, t-test 유형, 신뢰범위)
+  * IBM Data는 관측치가 30개가 넘고, 짝을 이루고 있지 않으면서 등분산성을 만족하기에 2-sample T-test를 시행합니다. 
+
+```{r ttest}
+  t.test(JobSatisfaction ~ Education, Edu_Ba_Be, conf.level=0.95)
+```
+  
+* 두 그룹 간의 평균 차이는 2.8 - 2.652098 = 0.147902 인데, p-value = 0.1243으로 유의미한 차이가 아닌 것으로 나타났습니다.   
+* 대졸 미만과, 대졸 구성원 간 직무만족의 차이는 통계적으로 유의미하지 않은 것으로 확인 되었습니다.  
+* 동일한 방법으로 WorkLifeBalance도 시행해보았으나, 통계적으로 유의미한 차이는 없었습니다.  
+* 보다 자세한 내용에 대해서는 T-test에 대한 youtube 강의 참고 부탁 드립니다.  [(통알못을 위한 통계튜브 ttest)](https://www.youtube.com/watch?v=mEWQ_vl3IPw&list=PLalb9l0_6WArHh18Plrn8uIGBUKalqsf-)
+
+---
+## 2. ANOVA
+### 2.1 ANOVA 개요
+#### ANOVA 시작에 앞서 자료 유형에 따른 통계분석 방법에 대해 아래와 같이 공유 드립니다. (ctrl키+마우스휠로 크기 조정 가능합니다.)
+
+<iframe width='853' height='600' src='https://embed.coggle.it/diagram/Xsy5FYHalYHHk5cA/1ae970a66d3cdbc90a3b7ae73df4bcbee9ce74952fe70d9412bd87e0882d0a5e' frameborder='0' allowfullscreen></iframe>
+
+---
+### 2.1 ANOVA 개요
+  
+* 전부 다 활용하지는 않지만, 분석하시고자 하는 방향과 자료 유형에 따라 다양한 통계분석 방법을 R을 통해 쉽게 해보실 수 있습니다.  
+  
+* 얕은 지식을 기반으로 기존 자료들을 짜깁기하여 만들어 보았는데, 잘못된 부분을 발견하신다면 말씀 부탁 드립니다.
+  
+* 오늘은 앞서 활용했던 IBM의 HR데이터를 활용하여 One-way ANOVA 를 시행해보겠습니다.  
+  
+* One-way ANOVA는 독립변인 1개, 종속변인 1개 인경우 활용하는 분석 방법입니다.  
+  
+* 이번에는 세 집단 이상에서 학력 (전문대졸 미만, 전문대졸, 대졸, 석사, 박사) 수준에 따라'직무만족'에 유의미한 차이를 보이는지 확인하고자 합니다.  
+  
+* 두 집단의 유의미한 차이를 분석하는 t Test를 6번 하면 되는 것 아니냐고 하실 수도 있지만, t Test를 6번 하게 되면, 1종 오류(아닌데 맞다고 하는 경우)를 범할 확률이 매우 높다고 합니다.  
+  [t Test vs ANOVA 참고](https://dailyheumsi.tistory.com/81)
+
+* 우선 필요한 라이브러리를 불러옵니다.  
+  
+```{r library081, include=FALSE}
+pacman::p_load('tidyverse','tidymodels','twidlr','dplyr')
+```
+
+  
+```{r library08, eval=FALSE}
+pacman::p_load('tidyverse','tidymodels','twidlr','dplyr')
+```
+---
+  
+### 2.2 데이터 불러오기/전처리
+
+* 데이터 불러오기/전처리는 [지난 시간](#data_Import)에 진행한 내용 참고하시어 동일하게 진행해주시면 됩니다.  
+  
+* 지난 시간에 RDS 데이터로 저장해두었으므로, 불러오겠습니다.  
+  
+```{r RDS data import}
+mydata <- readRDS('mydata.RDS')
+```
+
+* 독립변인은 지난 번 t Test와 동일하게 '학력'으로 두고, 종속변인은 '직무만족' 으로 두겠습니다.  
+  
+```{r Data Selection082}
+mydata %>% dplyr::select(Education,JobSatisfaction) -> Edu_Ba_Be
+```
+
+* mydata 중, Education과 JobSatisfaction 변수만 골라서 Edu_Ba_Be 데이터로 저장했고, 데이터를 확인해보겠습니다. 
+
+```{r data check anova}
+glimpse(Edu_Ba_Be)
+```  
+  
+---
+
+### 2.3 ANOVA 준비
+
+#### 학력'별 '직무만족' boxplot으로 확인하기
+  
+```{r boxplot for ANOVA}
+#그래프를 보여주는 새 창을 띄우고(실제 실행시 # 지우고 실행하세요)
+#dev.new()
+#Jobsatisfaction을 종속(y), Education을 독립(X)로 하는 boxplot을 그리고, 색(col)은 5가지 무지개색으로 지정합니다.
+boxplot(JobSatisfaction ~ Education,Edu_Ba_Be, col=rainbow(5))
+```
+
+* 설문 데이터의 경우, 5점 척도이기에 집단간 차이가 있는지 boxplot으로 판단하기는 쉽지 않습니다.
+
+* boxplot 결과를 보면 대졸미만 ~ 석사 까지는 비슷한데, 박사만 직무만족의 IQR이 다른 것 같습니다.
+---
+### 2.3 ANOVA 준비  
+#### one-way ANOVA를 위해 독립변수를 factor 형태로 변환  
+  
+  > **as.factor(데이터/변수) : 데이터/변수를 factor type으로 변환하라 **
+  
+* 분산분석을 하실 때는, 독립변수를 factor형으로 변환해주셔야 합니다.  
+
+```{r factorize check}
+glimpse(Edu_Ba_Be)
+Edu_Ba_Be$Education <- as.factor(Edu_Ba_Be$Education)
+glimpse(Edu_Ba_Be)
+```
+  
+* Edu_Ba_Be의 Education변수를 factor 형으로 바꾼 후, fct 로 바뀌었음을 확인 하실 수 있습니다.  
+  
+---
+### 2.4 ANOVA 실행
+
+> **aov(종속 ~ 독립, 데이터): 데이터에 있는 독립변수와 종속변수로 ANOVA 분석을 진행하라 **  
+  
+* R에서 one-way ANOVA 분석은 aov 함수를 통해 진행하실 수 있습니다.  
+  
+* 코드는 아래와 같이 구성하시면 됩니다.  
+  
+>  aov(독립변수~종속변수(그룹변수), data=데이터명)
+  
+* 학력에 따라 직무만족에 유의미한 차이가 있는지 ANOVA 해보겠습니다. 
+
+```{r aob with JS EDu}
+aov(JobSatisfaction ~ Education, data=Edu_Ba_Be)
+```
+---
+### 2.4 ANOVA 실행
+#### ANOVA 결과를 확인해봅니다. 
+  
+  
+* 위 결과 값을 보시면, ANOVA 분석 결과를 확인할 수 있는 F 값이 나타나지 않습니다.  
+  
+* 일반적으로는 summary 함수를 통해 확인하지만, 저희는 tidymodels 패키지를 활용하기에 tidy 함수를 활용하여 결과를 볼 수 있습니다.  
+  
+  
+```{r aov with result}  
+aov(JobSatisfaction ~ Education, data=Edu_Ba_Be)%>%tidy
+```
+ 
+  
+* 위 결과에서 statistic이 F value를 의미하며, 통계적으로 유의한지는 p-value를 보시면 됩니다.  
+  
+* p-value는 0.277로 0.05보다 커서 '학력'에 따른 '직무만족'의 차이는 유의미하지 않은 것으로 보시면 됩니다.  
+  
+---
+### 2.4 ANOVA 실행
+#### 등분산성을 확인해줍니다 
+  
+> **bartlett.test(종속 ~ 독립, 데이터): 데이터에 있는 종속, 독립 변인으로 K개의 표본이 등분산성을 갖는지 검정하라**
+  
+* 분산분석의 경우, 집단간 등분산성을 만족해야 합니다.  
+  
+* one-way ANOVA에서 만약 통계적으로 유의미한 차이가 있다고 나오는 경우, 반드시 등분산성을 만족하는지 테스트를 해주셔야 합니다.  
+  
+```{r bartlett test}
+bartlett.test(JobSatisfaction ~ Education, data=Edu_Ba_Be)
+```
+  
+* 위에서 p-value가 0.05 보다 크므로, Education 5개 집단의 분산이 다르다는 대립가설을 기각하므로, 등분산성을 만족한다고 보시면 됩니다.  
+  
+* bartlett.test 외, levene.test() 함수도 많이 사용합니다.  
+  
+---
+### 2.5 사후검정 시행
+  
+* 3개 집단 이상의 차이가 있는지 aov() 함수로 분석하신 뒤에는 반드시 **사후검정**을 해주셔야 어떤 집단간에 차이가 있었는지 확인하실 수 있습니다.  
+  
+* aov()는 그저, 집단간에 차이가 있다/없다 정도만을 알려줄 뿐, 어느 집단 간 차이가 있는지 알려주지 않습니다.  
+  
+* 사후 검정에는 *본페로니(Bonferroni), 튜키 (Tukey), 쉐페 (Scheffe)*의 방법 등이 일반적으로 사용되며, 자세한 내용은 아래의 링크 참조 부탁 드립니다.  
+  
+  [사후검정 방법](https://mansoostat.tistory.com/48)
+  
+---
+### 2.5 사후검정 시행
+#### Tukey 사후검정을 시행합니다
+
+> **TukeyHSD(aov한 결과) : aov한 결과에서, 어떤 집단끼리 차이가 있는지 보여달라**  
+  
+```{r tukey test}
+aov(JobSatisfaction ~ Education, data= Edu_Ba_Be)%>%TukeyHSD%>%tidy
+```
+* 첫번째 행을 보면, Education 값이 2인 전문대졸 집단과, Education 값이 1인 전문대졸 이하 집단을 비교한 것입니다. p-value가 0.05보다 매우 크므로, 집단간 차이가 없음을 알 수 있습니다.  
+  
+* 앞서 one-way ANOVA 결과에서 학력 수준에 따라 직무만족에 차이가 없음을 확인했으니, 집단간 차이를 보아도 전부 차이가 없게 나올 수 밖에 없습니다.
+  
+* 위와 같은 과정을 통해 3개 이상의 집단간 통계적으로 유의미한 차이가 있는지 확인하실 수 있습니다.  
+  
+
+
+
